@@ -1,5 +1,5 @@
 /*
-    Better Button Test v2
+    Better Button Test v3
     GBDK 2020 for Game Boy
 */
 
@@ -10,8 +10,6 @@
 #include <gbdk/console.h>
 #include <gbdk/font.h>
 
-#define MIN(x,y) ((x) > (y) ? (y) : (x))
-#define MAX(x,y) ((x) < (y) ? (y) : (x))
 
 // Keys
 uint8_t previousKeys = 0;
@@ -19,8 +17,10 @@ int8_t keys = 0;
 #define UPDATE_KEYS() previousKeys = keys; keys = joypad()
 #define KEY_PRESSED(K) (keys & (K))
 #define KEY_TICKED(K) ((keys & (K)) && !(previousKeys & (K)))
+#define KEY_RELEASED(K) (!(keys & (K)) && (previousKeys & (K)))
 
-// Global Variables
+
+// Globals
 uint16_t totalCount = 0;
 uint16_t startCount = 0;
 uint16_t selectCount = 0;
@@ -32,17 +32,31 @@ uint16_t leftCount = 0;
 uint16_t rightCount = 0;
 uint8_t dpadError = 0;
 
-// Draw Functions
+uint8_t playChannel = 0;
+uint8_t lowIndex = 255;
+uint8_t highIndex = 255;
+uint16_t scaleLow[] = {710, 854, 986, 1046, 1155, 1253, 1339, 1379}; // G3, A3, B3, C4, D4, E4, F#4, G4
+uint16_t scaleHigh[] = {1379, 1452, 1517, 1546, 1602, 1650, 1694, 1714}; // G4, A4, B4, C5, D5, E5, F#5, G5
+
+
+// Drawing
 #define RGB_DARK_PURPLE 0x2405
 #define RGB_GOLD 0x331C
 font_t ibmFont, minFont, minFontInvert;
 const palette_color_t cgb_palette[] = {RGB_WHITE, RGB_BLACK, RGB_GOLD, RGB_DARK_PURPLE};
 
-void setup_fonts() {
+void setupFonts() {
     font_init();
     font_color(0, 3);
-    ibmFont = font_load(font_ibm);
     minFont = font_load(font_min);
+
+    if (_cpu == CGB_TYPE) {
+        font_color(2, 3);
+    } else {
+        font_color(0, 3);
+    }
+    ibmFont = font_load(font_ibm);
+
     if (_cpu == CGB_TYPE) {
         font_color(1, 2);
     } else {
@@ -51,7 +65,7 @@ void setup_fonts() {
     minFontInvert = font_load(font_min);
 }
 
-void print_at_with(char str[], uint8_t x, uint8_t y, font_t font) {
+void printAtWith(char str[], uint8_t x, uint8_t y, font_t font) {
     font_set(font);
     gotoxy(x, y);
     printf(str);
@@ -80,55 +94,98 @@ font_t pressedFont(uint8_t key) {
     }
 }
 
-void draw_static() {
-    print_at_with("Better Button Test", 1, 1, ibmFont);
-    print_at_with("v2", 17, 2, ibmFont);
+
+// Sound
+void initSound() {
+    NR52_REG = 0x80; // Turn on sound hardware
+    NR11_REG = 0b10111111; // 2 bits for duty, 6 for length
+    NR21_REG = 0b10111111; // 2 bits for duty, 6 for length
+    NR50_REG = 0b01110111; // Channel Volume
+    NR51_REG = 0b00110011; // Mix in Channel 1 & 2
 }
 
-#define YO 0 // Y Offset
+void playTone(uint8_t scaleIndex) {
+    if (playChannel) {
+        // if (highIndex == 0 && scaleIndex == 7) scaleIndex = 0;
+        uint16_t tone = scaleLow[scaleIndex];
+        lowIndex = scaleIndex;
+        if (highIndex == lowIndex) highIndex = 255;
+        NR12_REG = 0b10001111; // 4 bits for initial vol, 1 for env direction, 3 for sweep count
+        NR13_REG = 0xFF & tone;
+        NR14_REG = 0b10000000 | ((tone >> 8) & 0b00000111);
+        playChannel = 0;
+    } else {
+        // if (lowIndex == 7 && scaleIndex == 0) scaleIndex = 7;
+        uint16_t tone = scaleHigh[scaleIndex];
+        highIndex = scaleIndex;
+        if (lowIndex == highIndex) lowIndex = 255;
+        NR22_REG = 0b10001111; // 4 bits for initial vol, 1 for env direction, 3 for sweep count
+        NR23_REG = 0xFF & tone;
+        NR24_REG = 0b10000000 | ((tone >> 8) & 0b00000111);
+        playChannel = 1;
+    }
+}
+
+void maybeStopTone(uint8_t scaleIndex) {
+    if (lowIndex == scaleIndex) {
+        uint16_t tone = scaleLow[scaleIndex];
+        NR12_REG = 0b10000111; // 4 bits for initial vol, 1 for env direction, 3 for sweep count
+        NR14_REG = 0b01000000 | ((tone >> 8) & 0b00000111);
+    } else if (highIndex == scaleIndex) {
+        uint16_t tone = scaleHigh[scaleIndex];
+        NR22_REG = 0b10000111; // 4 bits for initial vol, 1 for env direction, 3 for sweep count
+        NR24_REG = 0b01000000 | ((tone >> 8) & 0b00000111);
+    }
+}
+
+void drawStatic() {
+    printAtWith("Better Button Test", 1, 1, ibmFont);
+}
+
 void draw() {
-    print_at_with("A", 1, 4 + YO, pressedFont(J_A));
-    if (aCount) printCountAt(14, 4 + YO, aCount);
+    printAtWith("A", 1, 4, pressedFont(J_A));
+    if (aCount) printCountAt(14, 4, aCount);
     
-    print_at_with("B", 1, 5 + YO, pressedFont(J_B));
-    if (bCount) printCountAt(14, 5 + YO, bCount);
+    printAtWith("B", 1, 5, pressedFont(J_B));
+    if (bCount) printCountAt(14, 5, bCount);
 
-    print_at_with("UP", 1, 6 + YO, pressedFont(J_UP));
-    if (upCount) printCountAt(14, 6 + YO, upCount);
+    printAtWith("UP", 1, 6, pressedFont(J_UP));
+    if (upCount) printCountAt(14, 6, upCount);
 
-    print_at_with("DOWN", 1, 7 + YO, pressedFont(J_DOWN));
-    if (downCount) printCountAt(14, 7 + YO, downCount);
+    printAtWith("DOWN", 1, 7, pressedFont(J_DOWN));
+    if (downCount) printCountAt(14, 7, downCount);
 
-    print_at_with("LEFT", 1, 8 + YO, pressedFont(J_LEFT));
-    if (leftCount) printCountAt(14, 8 + YO, leftCount);
+    printAtWith("LEFT", 1, 8, pressedFont(J_LEFT));
+    if (leftCount) printCountAt(14, 8, leftCount);
     
-    print_at_with("RIGHT", 1, 9 + YO, pressedFont(J_RIGHT));
-    if (rightCount) printCountAt(14, 9 + YO, rightCount);
+    printAtWith("RIGHT", 1, 9, pressedFont(J_RIGHT));
+    if (rightCount) printCountAt(14, 9, rightCount);
     
-    print_at_with("START", 1, 10 + YO, pressedFont(J_START));
-    if (startCount) printCountAt(14, 10 + YO, startCount);
+    printAtWith("START", 1, 10, pressedFont(J_START));
+    if (startCount) printCountAt(14, 10, startCount);
 
-    print_at_with("SELECT", 1, 11 + YO, pressedFont(J_SELECT));
-    if (selectCount) printCountAt(14, 11 + YO, selectCount);
+    printAtWith("SELECT", 1, 11, pressedFont(J_SELECT));
+    if (selectCount) printCountAt(14, 11, selectCount);
+
 
     if (dpadError) {
-        print_at_with("ILLEGAL DPAD INPUT", 1, 14 + YO, minFontInvert);
-        print_at_with("MORE THAN 2 DIRS\n  PRESSED AT ONCE", 2, 15 + YO, minFont);
+        printAtWith("ILLEGAL DPAD INPUT", 1, 14, minFontInvert);
+        printAtWith("MORE THAN 2 DIRS\n  PRESSED AT ONCE", 2, 15, minFont);
     } else if (totalCount > 255) {
-        print_at_with("YOU REALLY LOVE", 2, 14 + YO, minFontInvert);
-        print_at_with("TESTING BUTTONS", 3, 15 + YO, minFontInvert);
+        printAtWith("YOU REALLY LOVE", 2, 14, minFontInvert);
+        printAtWith("TESTING BUTTONS", 3, 15, minFontInvert);
     }
 }
 
 void update() {
-    if (KEY_TICKED(J_START)) { startCount++; totalCount++; }
-    if (KEY_TICKED(J_SELECT)) { selectCount++; totalCount++; }
-    if (KEY_TICKED(J_A)) { aCount++; totalCount++; }
-    if (KEY_TICKED(J_B)) { bCount++; totalCount++; }
-    if (KEY_TICKED(J_UP)) { upCount++; totalCount++; }
-    if (KEY_TICKED(J_DOWN)) { downCount++; totalCount++; }
-    if (KEY_TICKED(J_LEFT)) { leftCount++; totalCount++; }
-    if (KEY_TICKED(J_RIGHT)) { rightCount++; totalCount++; }
+    if (KEY_TICKED(J_A)) { playTone(0); aCount++; totalCount++; } else if (KEY_RELEASED(J_A)) maybeStopTone(0);
+    if (KEY_TICKED(J_B)) { playTone(1); bCount++; totalCount++; } else if (KEY_RELEASED(J_B)) maybeStopTone(1);
+    if (KEY_TICKED(J_UP)) { playTone(2); upCount++; totalCount++; } else if (KEY_RELEASED(J_UP)) maybeStopTone(2);
+    if (KEY_TICKED(J_DOWN)) { playTone(3); downCount++; totalCount++; } else if (KEY_RELEASED(J_DOWN)) maybeStopTone(3);
+    if (KEY_TICKED(J_LEFT)) { playTone(4); leftCount++; totalCount++; } else if (KEY_RELEASED(J_LEFT)) maybeStopTone(4);
+    if (KEY_TICKED(J_RIGHT)) { playTone(5); rightCount++; totalCount++; } else if (KEY_RELEASED(J_RIGHT)) maybeStopTone(5);
+    if (KEY_TICKED(J_START)) { playTone(6); startCount++; totalCount++; } else if (KEY_RELEASED(J_START)) maybeStopTone(6);
+    if (KEY_TICKED(J_SELECT)) { playTone(7); selectCount++; totalCount++; } else if (KEY_RELEASED(J_SELECT)) maybeStopTone(7);
 
     if (
         (KEY_PRESSED(J_UP) && KEY_PRESSED(J_DOWN))
@@ -139,8 +196,9 @@ void update() {
 void main(void) {
     if (_cpu == CGB_TYPE) set_bkg_palette(0, 1, cgb_palette);
 
-    setup_fonts();
-    draw_static();
+    initSound();
+    setupFonts();
+    drawStatic();
 
     while(1) {
         update();
