@@ -1,5 +1,5 @@
 /*
-    Better Button Test v3
+    Better Button Test v4
     GBDK 2020 for Game Boy
 */
 
@@ -37,6 +37,8 @@ uint8_t lowIndex = 255;
 uint8_t highIndex = 255;
 uint16_t scaleLow[] = {710, 854, 986, 1046, 1155, 1253, 1339, 1379}; // G3, A3, B3, C4, D4, E4, F#4, G4
 uint16_t scaleHigh[] = {1379, 1452, 1517, 1546, 1602, 1650, 1694, 1714}; // G4, A4, B4, C5, D5, E5, F#5, G5
+uint16_t lowTone = 0;
+uint16_t highTone = 0;
 
 
 // Drawing
@@ -105,36 +107,36 @@ void initSound() {
 }
 
 void playTone(uint8_t scaleIndex) {
-    if (playChannel) {
-        // if (highIndex == 0 && scaleIndex == 7) scaleIndex = 0;
-        uint16_t tone = scaleLow[scaleIndex];
-        lowIndex = scaleIndex;
-        if (highIndex == lowIndex) highIndex = 255;
-        NR12_REG = 0b10001111; // 4 bits for initial vol, 1 for env direction, 3 for sweep count
-        NR13_REG = 0xFF & tone;
-        NR14_REG = 0b10000000 | ((tone >> 8) & 0b00000111);
+    if (playChannel) { // Channel 1 (Low)
         playChannel = 0;
-    } else {
-        // if (lowIndex == 7 && scaleIndex == 0) scaleIndex = 7;
-        uint16_t tone = scaleHigh[scaleIndex];
-        highIndex = scaleIndex;
-        if (lowIndex == highIndex) lowIndex = 255;
-        NR22_REG = 0b10001111; // 4 bits for initial vol, 1 for env direction, 3 for sweep count
-        NR23_REG = 0xFF & tone;
-        NR24_REG = 0b10000000 | ((tone >> 8) & 0b00000111);
+        lowIndex = scaleIndex;
+        lowTone = scaleLow[lowIndex];
+        if (highIndex == 0 && lowIndex == 7) lowTone = scaleLow[0]; // prevent the same pitch from being played together
+        
+        NR12_REG = 0b10001111; // 4 bits for initial vol, 1 for env direction, 3 for sweep count
+        NR13_REG = 0xFF & lowTone;
+        NR14_REG = 0b10000000 | ((lowTone >> 8) & 0b00000111);
+    } else { // Channel 2 (High)
         playChannel = 1;
+        highIndex = scaleIndex;
+        highTone = scaleHigh[highIndex];
+        if (lowIndex == 7 && highIndex == 0) highTone = scaleHigh[7]; // prevent the same pitch from being played together
+        
+        NR22_REG = 0b10001111; // 4 bits for initial vol, 1 for env direction, 3 for sweep count
+        NR23_REG = 0xFF & highTone;
+        NR24_REG = 0b10000000 | ((highTone >> 8) & 0b00000111);
     }
 }
 
 void maybeStopTone(uint8_t scaleIndex) {
     if (lowIndex == scaleIndex) {
-        uint16_t tone = scaleLow[scaleIndex];
+        lowIndex = 255;
         NR12_REG = 0b10000111; // 4 bits for initial vol, 1 for env direction, 3 for sweep count
-        NR14_REG = 0b01000000 | ((tone >> 8) & 0b00000111);
+        NR14_REG = 0b01000000 | ((lowTone >> 8) & 0b00000111);
     } else if (highIndex == scaleIndex) {
-        uint16_t tone = scaleHigh[scaleIndex];
+        highIndex = 255;
         NR22_REG = 0b10000111; // 4 bits for initial vol, 1 for env direction, 3 for sweep count
-        NR24_REG = 0b01000000 | ((tone >> 8) & 0b00000111);
+        NR24_REG = 0b01000000 | ((highTone >> 8) & 0b00000111);
     }
 }
 
