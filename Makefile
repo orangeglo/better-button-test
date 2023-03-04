@@ -25,8 +25,12 @@ compile.bat: Makefile
 	@make -sn | sed y/\\//\\\\/ | grep -v make >> compile.bat
 
 # Compile and link all source files in a single call to LCC
+# -Wm-yc : color support
+# -Wl-yt0x1B : MBC5 ROM + RAM + Battery (for better compatibility with emulators)
+# -Wl-ya1 : 1 RAM bank
+
 $(BINS):	$(CSOURCES) $(ASMSOURCES)
-	$(LCC) -Wm-yn"BETTERBUTTON" -Wm-yc -Wl-yt0x00 -o $@ $(CSOURCES) $(ASMSOURCES)
+	$(LCC) -Wm-yn"BETTERBUTTON" -Wm-yc -Wl-yt0x1B -Wl-ya1 -D_ram_func=0xD000 -o $@ $(CSOURCES) $(ASMSOURCES)
 
 clean:
 	rm -f *.o *.lst *.map *.gb *.ihx *.sym *.cdb *.adb *.asm
