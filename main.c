@@ -261,7 +261,9 @@ void wipeFlash() {
 void saveSettings() {
     *ramId = RAM_ID;
     *ramTheme = themeIndex;
-    if (*ramId != RAM_ID) saveFlashViaMem();
+    if (*ramId != RAM_ID && (usingFlashSave || themeIndex > 0)) {
+        saveFlashViaMem();
+    }
 }
 
 void loadSettings() {
