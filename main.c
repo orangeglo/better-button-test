@@ -16,7 +16,7 @@
 #define objectDistance(a, b) ((void *)&(b) - (void *)&(a))
 unsigned char __at _ram_func ramBuffer[]; // compiler will set this
 typedef void (*ram_function_ptr)(void); // setup function pointers
-ram_function_ptr saveFlashViaMem = (ram_function_ptr)ramBuffer;
+ram_function_ptr saveFlashViaMem = (ram_function_ptr) ramBuffer;
 
 
 // Keys
@@ -33,7 +33,6 @@ uint8_t keys = 0;
 uint8_t inMenu = 0;
 uint8_t menuKeyLock = 0;
 uint8_t themeIndex = 0;
-uint8_t keyIndex = 0;
 
 uint16_t totalCount = 0;
 uint16_t startCount = 0;
@@ -52,43 +51,8 @@ uint8_t highIndex = 255;
 uint16_t lowTone = 0;
 uint16_t highTone = 0;
 
-const char* keyStrings[] = {"G", "Ab", "A", "Bb", "B", "C", "Db", "D", "Eb", "E", "F", "Gb"};
 const uint16_t scaleLowG[] = {710, 854, 986, 1046, 1155, 1253, 1339, 1379}; // G3, A3, B3, C4, D4, E4, F#4, G4
 const uint16_t scaleHighG[] = {1379, 1452, 1517, 1546, 1602, 1650, 1694, 1714}; // G4, A4, B4, C5, D5, E5, F#5, G5
-const uint16_t scaleLowAb[] = {786, 923, 1046, 1102, 1205, 1297, 1379, 1417}; // Ab3, Bb3, C4, Db4, Eb4, F4, G4, Ab4
-const uint16_t scaleHighAb[] = {1417, 1486, 1546, 1575, 1627, 1673, 1714, 1732}; // Ab4, Bb4, C5, Db5, Eb5, F5, G5, Ab5
-
-
-const uint16_t scaleLowA[] = {786, 923, 1046, 1102, 1205, 1297, 1379, 1417}; // Ab3, Bb3, C4, Db4, Eb4, F4, G4, Ab4
-const uint16_t scaleHighA[] = {1417, 1486, 1546, 1575, 1627, 1673, 1714, 1732}; // Ab4, Bb4, C5, Db5, Eb5, F5, G5, Ab5
-const uint16_t scaleLowBb[] = {786, 923, 1046, 1102, 1205, 1297, 1379, 1417}; // Ab3, Bb3, C4, Db4, Eb4, F4, G4, Ab4
-const uint16_t scaleHighBb[] = {1417, 1486, 1546, 1575, 1627, 1673, 1714, 1732}; // Ab4, Bb4, C5, Db5, Eb5, F5, G5, Ab5
-const uint16_t scaleLowB[] = {786, 923, 1046, 1102, 1205, 1297, 1379, 1417}; // Ab3, Bb3, C4, Db4, Eb4, F4, G4, Ab4
-const uint16_t scaleHighB[] = {1417, 1486, 1546, 1575, 1627, 1673, 1714, 1732}; // Ab4, Bb4, C5, Db5, Eb5, F5, G5, Ab5
-const uint16_t scaleLowC[] = {786, 923, 1046, 1102, 1205, 1297, 1379, 1417}; // Ab3, Bb3, C4, Db4, Eb4, F4, G4, Ab4
-const uint16_t scaleHighC[] = {1417, 1486, 1546, 1575, 1627, 1673, 1714, 1732}; // Ab4, Bb4, C5, Db5, Eb5, F5, G5, Ab5
-const uint16_t scaleLowDb[] = {786, 923, 1046, 1102, 1205, 1297, 1379, 1417}; // Ab3, Bb3, C4, Db4, Eb4, F4, G4, Ab4
-const uint16_t scaleHighDb[] = {1417, 1486, 1546, 1575, 1627, 1673, 1714, 1732}; // Ab4, Bb4, C5, Db5, Eb5, F5, G5, Ab5
-const uint16_t scaleLowD[] = {786, 923, 1046, 1102, 1205, 1297, 1379, 1417}; // Ab3, Bb3, C4, Db4, Eb4, F4, G4, Ab4
-const uint16_t scaleHighD[] = {1417, 1486, 1546, 1575, 1627, 1673, 1714, 1732}; // Ab4, Bb4, C5, Db5, Eb5, F5, G5, Ab5
-const uint16_t scaleLowEb[] = {786, 923, 1046, 1102, 1205, 1297, 1379, 1417}; // Ab3, Bb3, C4, Db4, Eb4, F4, G4, Ab4
-const uint16_t scaleHighEb[] = {1417, 1486, 1546, 1575, 1627, 1673, 1714, 1732}; // Ab4, Bb4, C5, Db5, Eb5, F5, G5, Ab5
-const uint16_t scaleLowE[] = {786, 923, 1046, 1102, 1205, 1297, 1379, 1417}; // Ab3, Bb3, C4, Db4, Eb4, F4, G4, Ab4
-const uint16_t scaleHighE[] = {1417, 1486, 1546, 1575, 1627, 1673, 1714, 1732}; // Ab4, Bb4, C5, Db5, Eb5, F5, G5, Ab5
-const uint16_t scaleLowF[] = {786, 923, 1046, 1102, 1205, 1297, 1379, 1417}; // Ab3, Bb3, C4, Db4, Eb4, F4, G4, Ab4
-const uint16_t scaleHighF[] = {1417, 1486, 1546, 1575, 1627, 1673, 1714, 1732}; // Ab4, Bb4, C5, Db5, Eb5, F5, G5, Ab5
-const uint16_t scaleLowGb[] = {786, 923, 1046, 1102, 1205, 1297, 1379, 1417}; // Ab3, Bb3, C4, Db4, Eb4, F4, G4, Ab4
-const uint16_t scaleHighGb[] = {1417, 1486, 1546, 1575, 1627, 1673, 1714, 1732}; // Ab4, Bb4, C5, Db5, Eb5, F5, G5, Ab5
-
-uint16_t* lowScales[] = {
-    scaleLowG, scaleLowAb, scaleLowA, scaleLowBb, scaleLowB, scaleLowC,
-    scaleLowDb, scaleLowD, scaleLowEb, scaleLowE, scaleLowF, scaleLowGb
-};
-uint16_t* highScales[] = {
-    scaleHighG, scaleHighAb, scaleHighA, scaleHighBb, scaleHighB, scaleHighC,
-    scaleHighDb, scaleHighD, scaleHighEb, scaleHighE, scaleHighF, scaleHighGb
-};
-const uint8_t keyCount = 12;
 
 
 // Drawing & Themes
@@ -108,30 +72,45 @@ font_t ibmFont, minFont, minFontInvert;
 #define RGB_POCKET_LIGHT_GREY 0x4B15
 #define RGB_POCKET_DARK_GREY 0x3E4F
 #define RGB_POCKET_BLACK 0x2D89
+#define RGB_EXTREME_RED 0x0CB7
+#define RGB_LEAF_GREEN 0x2240
+#define RGB_DUSK_GREEN 0x2392
+#define RGB_DUSK_TEAL 0x4608
+#define RGB_DUSK_PURPLE 0x28A6
+#define RGB_SUNRISE_PURPLE 0x2CEF
+#define RGB_SUNRISE_ORANGE 0x3ABF
+#define RGB_SUNRISE_RED 0x35BD
+#define RGB_SUNRISE_YELLOW 0x6BDF
 
                             // NORMAL TEXT, HIGHLIGHT TEXT, HIGHLIGHT/TITLE, BG
-const palette_color_t palette0[] = {RGB_WHITE, RGB_BLACK, RGB_GOLD, RGB_DARK_PURPLE};
-const palette_color_t palette1[] = {RGB_WHITE, RGB_BLACK, RGB_GOLD, RGB_DARK_BLUE};
-const palette_color_t palette2[] = {RGB_WHITE, RGB_BLACK, RGB_GOLD, RGB_DARK_GREEN};
-const palette_color_t palette3[] = {RGB_WHITE, RGB_BLACK, RGB_GOLD, RGB_DARK_ORANGE};
-const palette_color_t palette4[] = {RGB_WHITE, RGB_BLACK, RGB_GOLD, RGB_DARK_RED};
-const palette_color_t palette5[] = {RGB_WHITE, RGB_BLACK, RGB_GOLD, RGB_BLACK};
-const palette_color_t palette6[] = {RGB_BLACK, RGB_WHITE, RGB_BLACK, RGB_WHITE};
-const palette_color_t palette7[] = {RGB_WHITE, RGB_BLACK, RGB_WHITE, RGB_BLACK};
-const palette_color_t palette8[] = {RGB_BLACK, RGB_WHITE, RGB_ICE_BLUE, RGB_CERULEAN};
-const palette_color_t palette9[] = {RGB_GREEN, RGB_WHITE, RGB_GREY, RGB_BLACK};
-const palette_color_t paletteA[] = {RGB_WHITE, RGB_BLACK, RGB_VIOLET, RGB_MUTED_PINK};
-// const palette_color_t paletteB[] = {RGB_RED, RGB_WHITE, RGB_BLUE, RGB_BLACK};
-const palette_color_t paletteB[] = {RGB_WHITE, RGB_RED, RGB_BLACK, 0x0CB7};
-const palette_color_t paletteC[] = {RGB_POCKET_WHITE, RGB_POCKET_LIGHT_GREY, RGB_POCKET_DARK_GREY, RGB_POCKET_BLACK};
-const palette_color_t paletteD[] = {RGB_WHITE, RGB_GREEN, RGB_DARK_GREEN, 0x2240};
-const palette_color_t paletteE[] = {RGB_WHITE, 0x2392, 0x4608, 0x28A6};
-const palette_color_t paletteF[] = {0x2CEF, 0x3ABF, 0x35BD, 0x6BDF};
+const palette_color_t palettePurple[] = {RGB_WHITE, RGB_BLACK, RGB_GOLD, RGB_DARK_PURPLE};
+const palette_color_t paletteBlue[] = {RGB_WHITE, RGB_BLACK, RGB_GOLD, RGB_DARK_BLUE};
+const palette_color_t paletteGreen[] = {RGB_WHITE, RGB_BLACK, RGB_GOLD, RGB_DARK_GREEN};
+const palette_color_t paletteOrange[] = {RGB_WHITE, RGB_BLACK, RGB_GOLD, RGB_DARK_ORANGE};
+const palette_color_t paletteRed[] = {RGB_WHITE, RGB_BLACK, RGB_GOLD, RGB_DARK_RED};
+const palette_color_t paletteBlack[] = {RGB_WHITE, RGB_BLACK, RGB_GOLD, RGB_BLACK};
+const palette_color_t paletteSuperBlue[] = {RGB_WHITE, RGB_WHITE, RGB_ICE_BLUE, RGB_CERULEAN};
+const palette_color_t paletteVeryGreen[] = {RGB_WHITE, RGB_GREEN, RGB_DARK_GREEN, RGB_LEAF_GREEN};
+const palette_color_t paletteReallyPink[] = {RGB_WHITE, RGB_BLACK, RGB_VIOLET, RGB_MUTED_PINK};
+const palette_color_t paletteExtremeRed[] = {RGB_WHITE, RGB_RED, RGB_BLACK, RGB_EXTREME_RED};
+const palette_color_t paletteTerminal[] = {RGB_GREEN, RGB_WHITE, RGB_GREY, RGB_BLACK};
+const palette_color_t paletteDotMatrix[] = {RGB_POCKET_WHITE, RGB_POCKET_LIGHT_GREY, RGB_POCKET_DARK_GREY, RGB_POCKET_BLACK};
+const palette_color_t paletteDusk[] = {RGB_WHITE, RGB_DUSK_GREEN, RGB_DUSK_TEAL, RGB_DUSK_PURPLE};
+const palette_color_t paletteSunrise[] = {RGB_SUNRISE_PURPLE, RGB_SUNRISE_ORANGE, RGB_SUNRISE_RED, RGB_SUNRISE_YELLOW};
+const palette_color_t paletteWhiteHC[] = {RGB_BLACK, RGB_WHITE, RGB_BLACK, RGB_WHITE};
+const palette_color_t paletteBlackHC[] = {RGB_WHITE, RGB_BLACK, RGB_WHITE, RGB_BLACK};
 
-const char* themeLetters = "0123456789ABCDEF";
+const char* themeNames[] = {
+    "     Purple", "       Blue", "      Green", "     Orange",
+    "        Red", "      Black", " Super Blue", " Very Green",
+    "Really Pink", "Extreme Red", "   Terminal", " Dot Matrix", 
+    "       Dusk", "    Sunrise", "   White HC", "   Black HC"
+};
 palette_color_t* palettes[] = {
-    palette0, palette1, palette2, palette3, palette4, palette5, palette6, palette7,
-    palette8, palette9, paletteA, paletteB, paletteC, paletteD, paletteE, paletteF
+    palettePurple, paletteBlue, paletteGreen, paletteOrange,
+    paletteRed, paletteBlack, paletteSuperBlue, paletteVeryGreen,
+    paletteReallyPink, paletteExtremeRed, paletteTerminal, paletteDotMatrix,
+    paletteDusk, paletteSunrise, paletteWhiteHC, paletteBlackHC
 };
 const uint8_t themeCount = sizeof palettes / sizeof palettes[0];
 
@@ -184,6 +163,19 @@ font_t pressedFont(uint8_t key) {
     }
 }
 
+void clearMessageArea() {
+    printAtWith("                                                            ", 0, 14, minFont);
+}
+
+void whiteScreen() {
+    font_set(ibmFont);
+    set_bkg_palette(0, 1, paletteWhiteHC);
+    for (uint8_t i = 0; i < 18; i++) {
+        gotoxy(0, i);
+        printf("                    ");
+    }
+}
+
 
 // Sound
 void initSound() {
@@ -194,20 +186,12 @@ void initSound() {
     NR51_REG = 0b00110011; // Mix in Channel 1 & 2
 }
 
-uint16_t* scaleLow() {
-    return lowScales[keyIndex];
-}
-
-uint16_t* scaleHigh() {
-    return highScales[keyIndex];
-}
-
 void playTone(uint8_t scaleIndex) {
     if (playChannel) { // Channel 1 (Low)
         playChannel = 0;
         lowIndex = scaleIndex;
-        lowTone = scaleLow()[lowIndex];
-        if (highIndex == 0 && lowIndex == 7) lowTone = scaleLow()[0]; // prevent the same pitch from being played together
+        lowTone = scaleLowG[lowIndex];
+        if (highIndex == 0 && lowIndex == 7) lowTone = scaleLowG[0]; // prevent the same pitch from being played together
         
         NR12_REG = 0b10001111; // 4 bits for initial vol, 1 for env direction, 3 for sweep count
         NR13_REG = 0xFF & lowTone;
@@ -215,8 +199,8 @@ void playTone(uint8_t scaleIndex) {
     } else { // Channel 2 (High)
         playChannel = 1;
         highIndex = scaleIndex;
-        highTone = scaleHigh()[highIndex];
-        if (lowIndex == 7 && highIndex == 0) highTone = scaleHigh()[7]; // prevent the same pitch from being played together
+        highTone = scaleHighG[highIndex];
+        if (lowIndex == 7 && highIndex == 0) highTone = scaleHighG[7]; // prevent the same pitch from being played together
         
         NR22_REG = 0b10001111; // 4 bits for initial vol, 1 for env direction, 3 for sweep count
         NR23_REG = 0xFF & highTone;
@@ -247,7 +231,6 @@ uint8_t usingFlashSave = 0;
 
 uint8_t volatile * const ramId = (uint8_t *) 0xA000;
 uint8_t volatile * const ramTheme = (uint8_t *) 0xA001;
-uint8_t volatile * const ramKey = (uint8_t *) 0xA002;
 
 uint8_t volatile * const flashSectorAddr = (uint8_t *) 0x7000;
 uint8_t volatile * const flashSaveByte = (uint8_t *) 0x7FFF;
@@ -258,8 +241,7 @@ void saveFlash() {
     *fives = 0xAA;
     *two_a = 0x55;
     *fives = 0xA0;
-    // *flashSaveByte = ((themeIndex & 0xF) << 4) | (keyIndex & 0xF);
-    *flashSaveByte = ((keyIndex & 0xF) << 4) | (themeIndex & 0xF);
+    *flashSaveByte = themeIndex & 0xF;
     delay(100);
 }
 void saveFlashEnd() {}
@@ -279,22 +261,17 @@ void wipeFlash() {
 void saveSettings() {
     *ramId = RAM_ID;
     *ramTheme = themeIndex;
-    *ramKey = keyIndex;
     if (*ramId != RAM_ID) saveFlashViaMem();
 }
 
 void loadSettings() {
     if (*flashSaveByte != 0xFF) {
-        // themeIndex = (*flashSaveByte & 0xF0) >> 4;
-        // keyIndex = *flashSaveByte & 0xF;
-        keyIndex = (*flashSaveByte & 0xF0) >> 4;
         themeIndex = *flashSaveByte & 0xF;
         usingFlashSave = 1;
     }
 
     if (*ramId == RAM_ID) {
         themeIndex = *ramTheme;
-        keyIndex = *ramKey;
         usingFlashSave = 0;
     }
 }
@@ -305,7 +282,9 @@ uint8_t konamiStep = 0;
 uint8_t konamiKeyLock = 0;
 uint8_t konamiKeyLast = 0;
 const uint8_t konamiSequence[] = {J_UP, J_UP, J_DOWN, J_DOWN, J_LEFT, J_RIGHT, J_LEFT, J_RIGHT, J_B, J_A};
+
 uint8_t konamiCodeEntered() {
+    if (_cpu != CGB_TYPE) return 0;
     if (NO_KEYS_PRESSED() || (konamiKeyLock && KEY_RELEASED(konamiKeyLast))) konamiKeyLock = 0;
     if (konamiKeyLock) return 0;
 
@@ -327,32 +306,12 @@ uint8_t konamiCodeEntered() {
     return 0;
 }
 
-const char* themeNames[] = {
-    "     Purple",
-    "       Blue",
-    "      Green",
-    "     Orange",
-    "        Red",
-    "      Black",
-    "   White HC",
-    "   Black HC",
-    " Super Blue",
-    "   Terminal",
-    "Really Pink",
-    "Extreme Red",
-    " Dot Matrix",
-    " Very Green",
-    "       Dusk",
-    "    Sunrise"
-};
-
 
 // Main Loop
 void draw() {
     if (inMenu) {
         font_set(ibmFont);
         gotoxy(1,1);
-        // printf("Theme: %c   Key: %s ", (char)themeLetters[themeIndex], (char*)keyStrings[keyIndex]);
         printf("Theme: %s           ", (char*)themeNames[themeIndex]);
 
         if (usingFlashSave) {
@@ -391,8 +350,6 @@ void draw() {
         } else if (totalCount > 255) {
             printAtWith("YOU REALLY LOVE", 2, 14, minFontInvert);
             printAtWith("TESTING BUTTONS", 3, 15, minFontInvert);
-        } else {
-            printAtWith("                                                            ", 0, 14, minFont);
         }
     }
 }
@@ -407,13 +364,6 @@ void update() {
                 if (themeIndex == 255) themeIndex = themeCount - 1;
             }
 
-            if (KEY_TICKED(J_UP)) {
-                keyIndex = (keyIndex + 1) % keyCount;
-            } else if (KEY_TICKED(J_DOWN)) {
-                keyIndex = keyIndex - 1;
-                if (keyIndex == 255) keyIndex = keyCount - 1;
-            }
-
             if (_cpu == CGB_TYPE) set_bkg_palette(0, 1, palettes[themeIndex]);
         }
 
@@ -421,7 +371,9 @@ void update() {
             inMenu = 0;
             menuKeyLock = 1;
             saveSettings();
+            clearMessageArea();
         } else if (usingFlashSave && KEY_TICKED(J_START)) {
+            whiteScreen();
             wipeFlash();
         }
 
@@ -447,6 +399,7 @@ void update() {
         if (konamiCodeEntered()) {
             stopAllTones();
             loadSettings();
+            clearMessageArea();
             inMenu = 1;
         }
     }
@@ -455,7 +408,7 @@ void update() {
 void main(void) {
     ENABLE_RAM;
 
-    memcpy(&ramBuffer, (void *)&saveFlash, (uint16_t)objectDistance(saveFlash, saveFlashEnd));
+    memcpy(&ramBuffer, (void *) &saveFlash, (uint16_t) objectDistance(saveFlash, saveFlashEnd));
 
     loadSettings();
     initSound();
