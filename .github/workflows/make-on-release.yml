@@ -1,0 +1,21 @@
+name: Make for Release
+
+on:
+  release:
+    types:
+      - created
+
+jobs:
+  make-on-release:
+    runs-on: ubuntu-latest
+    name: Build ROM
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+      - name: Build
+        uses: ./
+      - name: Attach ROM to Release
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: src/better-button-test.gb

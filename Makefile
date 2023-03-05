@@ -1,7 +1,3 @@
-#
-# Simple Makefile that compiles all .c and .s files in the same folder
-#
-
 # If you move this project you can change the directory 
 # to match your GBDK root directory (ex: GBDK_HOME = "C:/GBDK/"
 GBDK_HOME = ../../../
@@ -15,8 +11,8 @@ LCC = $(GBDK_HOME)bin/lcc
 PROJECTNAME    = better-button-test
 
 BINS	    = $(PROJECTNAME).gb
-CSOURCES   := $(wildcard *.c)
-ASMSOURCES := $(wildcard *.s)
+CSOURCES   := $(wildcard src/*.c)
+ASMSOURCES := $(wildcard src/*.s)
 
 all:	$(BINS)
 
