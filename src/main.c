@@ -82,7 +82,7 @@ font_t ibmFont, minFont, minFontInvert;
 #define RGB_SUNRISE_RED 0x35BD
 #define RGB_SUNRISE_YELLOW 0x6BDF
 
-                            // NORMAL TEXT, HIGHLIGHT TEXT, HIGHLIGHT/TITLE, BG
+                                    // NORMAL TEXT, HIGHLIGHT TEXT, HIGHLIGHT/TITLE, BG
 const palette_color_t palettePurple[] = {RGB_WHITE, RGB_BLACK, RGB_GOLD, RGB_DARK_PURPLE};
 const palette_color_t paletteBlue[] = {RGB_WHITE, RGB_BLACK, RGB_GOLD, RGB_DARK_BLUE};
 const palette_color_t paletteGreen[] = {RGB_WHITE, RGB_BLACK, RGB_GOLD, RGB_DARK_GREEN};
@@ -183,7 +183,7 @@ void initSound() {
     NR11_REG = 0b10111111; // 2 bits for duty, 6 for length
     NR21_REG = 0b10111111; // 2 bits for duty, 6 for length
     NR50_REG = 0b01110111; // Channel Volume
-    NR51_REG = 0b00110011; // Mix in Channel 1 & 2
+    NR51_REG = 0b00010010; // Mix in Channel 1 & 2
 }
 
 void playTone(uint8_t scaleIndex) {
