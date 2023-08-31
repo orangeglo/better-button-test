@@ -1,5 +1,5 @@
 /*
-    Better Button Test v4
+    Better Button Test v5
     GBDK 2020 for Game Boy
 */
 
@@ -10,6 +10,8 @@
 #include <gb/cgb.h>
 #include <gbdk/console.h>
 #include <gbdk/font.h>
+
+#include "border.h"
 
 
 // RAM function stuff
@@ -134,6 +136,11 @@ void setupFonts() {
     minFontInvert = font_load(font_min);
 }
 
+void drawBorder() {
+    set_bkg_data(border_TILE_ORIGIN, border_TILE_COUNT, border_tiles);
+    set_bkg_tiles(0, 0, 20u, 18u, border_map);
+}
+
 void printAtWith(char str[], uint8_t x, uint8_t y, font_t font) {
     font_set(font);
     gotoxy(x, y);
@@ -164,7 +171,9 @@ font_t pressedFont(uint8_t key) {
 }
 
 void clearMessageArea() {
-    printAtWith("                                                            ", 0, 14, minFont);
+    printAtWith("                  ", 1, 14, minFont);
+    printAtWith("                  ", 1, 15, minFont);
+    printAtWith("                  ", 1, 16, minFont);
 }
 
 void whiteScreen() {
@@ -314,7 +323,7 @@ void draw() {
     if (inMenu) {
         font_set(ibmFont);
         gotoxy(1,1);
-        printf("Theme: %s           ", (char*)themeNames[themeIndex]);
+        printf("Theme: %s", (char*)themeNames[themeIndex]);
 
         if (usingFlashSave) {
             printAtWith("USING FLASH CONFIG", 1, 14, minFontInvert);
@@ -415,6 +424,7 @@ void main(void) {
     loadSettings();
     initSound();
     setupFonts();
+    drawBorder();
 
     if (_cpu == CGB_TYPE) set_bkg_palette(0, 1, palettes[themeIndex]);
 
