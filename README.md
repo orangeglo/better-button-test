@@ -1,12 +1,13 @@
 # Better Button Test
 **[DOWNLOAD LATEST ROM HERE](https://github.com/orangeglo/better-button-test/releases/latest)**
 
-<img width="270" alt="Screen Shot 2023-02-09 at 9 48 06 PM" src="https://user-images.githubusercontent.com/2780987/217987860-c118f25b-4669-44fd-9e62-ad5741315710.png">
+<img width="445" alt="Better Button Test v5" src="https://github.com/orangeglo/better-button-test/assets/2780987/86d14f5f-8d38-422f-b695-2be29e841950">
 
 - Counts number of button inputs per button
 - Warns if your d-pad produces invalid input (more than two directions pressed at once)
 - Produces pleasant tones
 - 16 different color themes
+- Square border for help aligning screens
 - Tastes and smells better than the competition
 
 ## Color Themes
