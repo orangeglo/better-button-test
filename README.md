@@ -9,6 +9,7 @@
 
 - Counts number of button inputs per button
 - Warns if your d-pad produces invalid input (more than two directions pressed at once)
+  - If your d-pad presses more than two direction at once, glitches can occur in some games - notably Link's Awakening. 
 - Produces pleasant tones
 - 16 different color themes
 - Tastes and smells better than the competition
