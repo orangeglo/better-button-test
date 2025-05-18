@@ -116,7 +116,7 @@ palette_color_t* palettes[] = {
 };
 const uint8_t themeCount = sizeof palettes / sizeof palettes[0];
 
-void setupFonts() {
+void setupFonts(void) {
     font_init();
     font_color(0, 3);
     minFont = font_load(font_min);
@@ -136,7 +136,7 @@ void setupFonts() {
     minFontInvert = font_load(font_min);
 }
 
-void drawBorder() {
+void drawBorder(void) {
     set_bkg_data(border_TILE_ORIGIN, border_TILE_COUNT, border_tiles);
     set_bkg_tiles(0, 0, 20u, 18u, border_map);
 }
@@ -170,13 +170,13 @@ font_t pressedFont(uint8_t key) {
     }
 }
 
-void clearMessageArea() {
+void clearMessageArea(void) {
     printAtWith("                  ", 1, 14, minFont);
     printAtWith("                  ", 1, 15, minFont);
     printAtWith("                  ", 1, 16, minFont);
 }
 
-void whiteScreen() {
+void whiteScreen(void) {
     font_set(ibmFont);
     set_bkg_palette(0, 1, paletteWhiteHC);
     for (uint8_t i = 0; i < 18; i++) {
@@ -187,7 +187,7 @@ void whiteScreen() {
 
 
 // Sound
-void initSound() {
+void initSound(void) {
     NR52_REG = 0x80; // Turn on sound hardware
     NR11_REG = 0b10111111; // 2 bits for duty, 6 for length
     NR21_REG = 0b10111111; // 2 bits for duty, 6 for length
@@ -229,7 +229,7 @@ void maybeStopTone(uint8_t scaleIndex) {
     }
 }
 
-void stopAllTones() {
+void stopAllTones(void) {
     for (uint8_t i = 0; i < 8; i++) maybeStopTone(i);
 }
 
@@ -246,16 +246,16 @@ uint8_t volatile * const flashSaveByte = (uint8_t *) 0x7FFF;
 uint8_t volatile * const fives = (uint8_t *) 0x5555;
 uint8_t volatile * const two_a = (uint8_t *) 0x2AAA;
 
-void saveFlash() {
+void saveFlash(void) {
     *fives = 0xAA;
     *two_a = 0x55;
     *fives = 0xA0;
     *flashSaveByte = themeIndex & 0xF;
     delay(100);
 }
-void saveFlashEnd() {}
+void saveFlashEnd(void) {}
 
-void wipeFlash() {
+void wipeFlash(void) {
     // wipe 0x7000 - 7FFF
     usingFlashSave = 1;
     *fives = 0xAA;
@@ -267,7 +267,7 @@ void wipeFlash() {
     delay(100);
 }
 
-void saveSettings() {
+void saveSettings(void) {
     *ramId = RAM_ID;
     *ramTheme = themeIndex;
     if (*ramId != RAM_ID && (usingFlashSave || themeIndex > 0)) {
@@ -275,7 +275,7 @@ void saveSettings() {
     }
 }
 
-void loadSettings() {
+void loadSettings(void) {
     if (*flashSaveByte != 0xFF) {
         themeIndex = *flashSaveByte & 0xF;
         usingFlashSave = 1;
@@ -294,7 +294,7 @@ uint8_t konamiKeyLock = 0;
 uint8_t konamiKeyLast = 0;
 const uint8_t konamiSequence[] = {J_UP, J_UP, J_DOWN, J_DOWN, J_LEFT, J_RIGHT, J_LEFT, J_RIGHT, J_B, J_A};
 
-uint8_t konamiCodeEntered() {
+uint8_t konamiCodeEntered(void) {
     if (_cpu != CGB_TYPE) return 0;
     if (NO_KEYS_PRESSED() || (konamiKeyLock && KEY_RELEASED(konamiKeyLast))) konamiKeyLock = 0;
     if (konamiKeyLock) return 0;
@@ -319,7 +319,7 @@ uint8_t konamiCodeEntered() {
 
 
 // Main Loop
-void draw() {
+void draw(void) {
     if (inMenu) {
         font_set(ibmFont);
         gotoxy(1,1);
@@ -365,7 +365,7 @@ void draw() {
     }
 }
 
-void update() {
+void update(void) {
     if (inMenu) {
         if (!usingFlashSave) {
             if (KEY_TICKED(J_RIGHT)) { 
