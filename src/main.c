@@ -1,5 +1,5 @@
 /*
-    Better Button Test v5
+    Better Button Test v6
     GBDK 2020 for Game Boy
 */
 
