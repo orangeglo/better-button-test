@@ -12,6 +12,7 @@
 #include <gbdk/font.h>
 
 #include "border.h"
+#include "super_gb.h"
 
 
 // RAM function stuff
@@ -32,6 +33,8 @@ uint8_t keys = 0;
 
 
 // Globals
+uint8_t sgb = 0;
+uint8_t cgb = 0;
 uint8_t inMenu = 0;
 uint8_t menuKeyLock = 0;
 uint8_t themeIndex = 0;
@@ -121,14 +124,14 @@ void setupFonts(void) {
     font_color(0, 3);
     minFont = font_load(font_min);
 
-    if (_cpu == CGB_TYPE) {
+    if (cgb || sgb) {
         font_color(2, 3);
     } else {
         font_color(0, 3);
     }
     ibmFont = font_load(font_ibm);
 
-    if (_cpu == CGB_TYPE) {
+    if (cgb || sgb) {
         font_color(1, 2);
     } else {
         font_color(3, 0);
@@ -176,9 +179,14 @@ void clearMessageArea(void) {
     printAtWith("                  ", 1, 16, minFont);
 }
 
+void set_palette(palette_color_t* pal) {
+    if (cgb) set_bkg_palette(0, 1, pal);
+    if (sgb) sgb_transfer_pal(pal);
+}
+
 void whiteScreen(void) {
     font_set(ibmFont);
-    set_bkg_palette(0, 1, paletteWhiteHC);
+    set_palette(paletteWhiteHC);
     for (uint8_t i = 0; i < 18; i++) {
         gotoxy(0, i);
         printf("                    ");
@@ -295,7 +303,8 @@ uint8_t konamiKeyLast = 0;
 const uint8_t konamiSequence[] = {J_UP, J_UP, J_DOWN, J_DOWN, J_LEFT, J_RIGHT, J_LEFT, J_RIGHT, J_B, J_A};
 
 uint8_t konamiCodeEntered(void) {
-    if (_cpu != CGB_TYPE) return 0;
+    if (!(cgb || sgb)) return 0;
+
     if (NO_KEYS_PRESSED() || (konamiKeyLock && KEY_RELEASED(konamiKeyLast))) konamiKeyLock = 0;
     if (konamiKeyLock) return 0;
 
@@ -375,7 +384,7 @@ void update(void) {
                 if (themeIndex == 255) themeIndex = themeCount - 1;
             }
 
-            if (_cpu == CGB_TYPE) set_bkg_palette(0, 1, palettes[themeIndex]);
+            set_palette(palettes[themeIndex]);
         }
 
         if ((!usingFlashSave && KEY_TICKED(J_START)) || KEY_RELEASED(J_START) || KEY_TICKED(J_SELECT) || KEY_TICKED(J_A) || KEY_TICKED(J_B)) {
@@ -421,12 +430,18 @@ void main(void) {
 
     memcpy(&ramBuffer, (void *) &saveFlash, (uint16_t) objectDistance(saveFlash, saveFlashEnd));
 
+    if (_cpu == CGB_TYPE) cgb = 1;
+    if (sgb_check()) {
+        sgb = 1;
+        sgb_pal_delay();
+    }
+
+    set_palette(palettes[themeIndex]);
+
     loadSettings();
     initSound();
     setupFonts();
     drawBorder();
-
-    if (_cpu == CGB_TYPE) set_bkg_palette(0, 1, palettes[themeIndex]);
 
     while(1) {
         UPDATE_KEYS();

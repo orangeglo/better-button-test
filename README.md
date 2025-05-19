@@ -22,7 +22,10 @@ To customize your color theme...
 1. Scroll through the different color themes with the left and right directional buttons.
 1. Press a non directional button to exit the menu and save your selection.
 
-### Notes On Saving
+> [!NOTE]
+> Note that the menu only opens on GBA, CGB, and SGB systems (color systems)
+
+### Saving Your Theme
 
 Better Button Test saves your theme selection using your cartridge's save memory. If your cartridge does not have save memory, your theme selection will not persist. However, Better Button Test _does_ support battery-less saving on cartridges using SST39SF010 flash memory, a relatively popular chip for simple homemade cartridges. This is accomplished by using flash programming commands to alter the rom stored in the flash memory.
 
