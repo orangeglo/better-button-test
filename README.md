@@ -13,7 +13,7 @@
 - Produces pleasant tones (in stereo with headphones)
 - Color gradient to help detect CPU transplant skill issues
 - Border to help align screens
-- Detects CPU type (TODO put list here)
+- Detects CPU type (**D**MG, **M**GB, **S**GB, **C**GB, **A**GB)
 - 16 different color themes
 - Tastes and smells better than the competition
 
@@ -26,7 +26,7 @@ To customize your color theme...
 1. Press a non directional button to exit the menu and save your selection.
 
 > [!NOTE]
-> Note that the menu only opens on GBA, CGB, and SGB systems (color systems)
+> Note that the menu only opens on CGB & AGB (color systems)
 
 ### Saving Your Theme
 
