@@ -10,7 +10,10 @@
 - Counts number of button inputs per button
 - Warns if your d-pad produces invalid input (more than two directions pressed at once)
   - If your d-pad presses more than two direction at once, glitches can occur in some games - notably Link's Awakening. 
-- Produces pleasant tones
+- Produces pleasant tones (in stereo with headphones)
+- Color gradient to help detect CPU transplant skill issues
+- Border to help align screens
+- Detects CPU type (TODO put list here)
 - 16 different color themes
 - Tastes and smells better than the competition
 

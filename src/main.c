@@ -1,6 +1,6 @@
 /*
-    Better Button Test v6
-    GBDK 2020 for Game Boy
+	Better Button Test v6
+	GBDK 2020 for Game Boy
 */
 
 #include <stdint.h>
@@ -11,8 +11,14 @@
 #include <gbdk/console.h>
 #include <gbdk/font.h>
 
-#include "border.h"
 #include "super_gb.h"
+
+#include "border.h"
+#include "testbar_color.h"
+#include "testbar_bw.h"
+
+#define BORDER_OFFSET 0xB0
+#define TESTBAR_OFFSET 0xB9
 
 
 // RAM function stuff
@@ -87,7 +93,7 @@ font_t ibmFont, minFont, minFontInvert;
 #define RGB_SUNRISE_RED 0x35BD
 #define RGB_SUNRISE_YELLOW 0x6BDF
 
-                                    // NORMAL TEXT, HIGHLIGHT TEXT, HIGHLIGHT/TITLE, BG
+									// NORMAL TEXT, HIGHLIGHT TEXT, HIGHLIGHT/TITLE, BG
 const palette_color_t palettePurple[] = {RGB_WHITE, RGB_BLACK, RGB_GOLD, RGB_DARK_PURPLE};
 const palette_color_t paletteBlue[] = {RGB_WHITE, RGB_BLACK, RGB_GOLD, RGB_DARK_BLUE};
 const palette_color_t paletteGreen[] = {RGB_WHITE, RGB_BLACK, RGB_GOLD, RGB_DARK_GREEN};
@@ -106,139 +112,233 @@ const palette_color_t paletteWhiteHC[] = {RGB_BLACK, RGB_WHITE, RGB_BLACK, RGB_W
 const palette_color_t paletteBlackHC[] = {RGB_WHITE, RGB_BLACK, RGB_WHITE, RGB_BLACK};
 
 const char* themeNames[] = {
-    "     Purple", "       Blue", "      Green", "     Orange",
-    "        Red", "      Black", " Super Blue", " Very Green",
-    "Really Pink", "Extreme Red", "   Terminal", " Dot Matrix", 
-    "       Dusk", "    Sunrise", "   White HC", "   Black HC"
+	"     Purple", "       Blue", "      Green", "     Orange",
+	"        Red", "      Black", " Super Blue", " Very Green",
+	"Really Pink", "Extreme Red", "   Terminal", " Dot Matrix", 
+	"       Dusk", "    Sunrise", "   White HC", "   Black HC"
 };
 palette_color_t* palettes[] = {
-    palettePurple, paletteBlue, paletteGreen, paletteOrange,
-    paletteRed, paletteBlack, paletteSuperBlue, paletteVeryGreen,
-    paletteReallyPink, paletteExtremeRed, paletteTerminal, paletteDotMatrix,
-    paletteDusk, paletteSunrise, paletteWhiteHC, paletteBlackHC
+	palettePurple, paletteBlue, paletteGreen, paletteOrange,
+	paletteRed, paletteBlack, paletteSuperBlue, paletteVeryGreen,
+	paletteReallyPink, paletteExtremeRed, paletteTerminal, paletteDotMatrix,
+	paletteDusk, paletteSunrise, paletteWhiteHC, paletteBlackHC
 };
 const uint8_t themeCount = sizeof palettes / sizeof palettes[0];
 
+palette_color_t* bgColorTestPalettes[24];
+palette_color_t* spriteColorTestPalettes[16];
+const uint8_t paletteSteps[] = {1, 4, 7, 12, 16, 20, 27, 31};
+
 void setupFonts(void) {
-    font_init();
-    font_color(0, 3);
-    minFont = font_load(font_min);
+	font_init();
+	font_color(0, 3);
+	minFont = font_load(font_min);
 
-    if (cgb || sgb) {
-        font_color(2, 3);
-    } else {
-        font_color(0, 3);
-    }
-    ibmFont = font_load(font_ibm);
+	if (cgb || sgb) {
+		font_color(2, 3);
+	} else {
+		font_color(0, 3);
+	}
+	ibmFont = font_load(font_ibm);
 
-    if (cgb || sgb) {
-        font_color(1, 2);
-    } else {
-        font_color(3, 0);
-    }
-    minFontInvert = font_load(font_min);
+	if (cgb || sgb) {
+		font_color(1, 2);
+	} else {
+		font_color(3, 0);
+	}
+	minFontInvert = font_load(font_min);
 }
 
 void drawBorder(void) {
-    set_bkg_data(border_TILE_ORIGIN, border_TILE_COUNT, border_tiles);
-    set_bkg_tiles(0, 0, 20u, 18u, border_map);
+	set_bkg_data(BORDER_OFFSET, border_TILE_COUNT, border_tiles);
+	set_bkg_based_tiles(0, 0, 20u, 18u, border_map, BORDER_OFFSET);
 }
 
+void buildColorTestPalettes(void) {
+	if (cgb) {
+		// Blue
+		for (uint8_t i = 0; i < 8; i++) {
+			bgColorTestPalettes[16 + i] = (palette_color_t*)(paletteSteps[i] << 10);
+		}
+		// Green
+		for (uint8_t i = 0; i < 8; i++) {
+			bgColorTestPalettes[8 + i] = (palette_color_t*)(paletteSteps[i] << 5);
+		}
+		// Red
+		for (uint8_t i = 0; i < 8; i++) {
+			bgColorTestPalettes[i] = (palette_color_t*)paletteSteps[i];
+		}
+
+		// White
+		spriteColorTestPalettes[0] = 0;
+		spriteColorTestPalettes[1] = 0;
+		spriteColorTestPalettes[2] = (palette_color_t*)((paletteSteps[0] << 10) | (paletteSteps[0] << 5) | paletteSteps[0]);
+		spriteColorTestPalettes[3] = (palette_color_t*)((paletteSteps[1] << 10) | (paletteSteps[1] << 5) | paletteSteps[1]);
+		spriteColorTestPalettes[4] = 0;
+		spriteColorTestPalettes[5] = 0;
+		spriteColorTestPalettes[6] = (palette_color_t*)((paletteSteps[2] << 10) | (paletteSteps[2] << 5) | paletteSteps[2]);
+		spriteColorTestPalettes[7] = (palette_color_t*)((paletteSteps[3] << 10) | (paletteSteps[3] << 5) | paletteSteps[3]);
+		spriteColorTestPalettes[8] = 0;
+		spriteColorTestPalettes[9] = 0;
+		spriteColorTestPalettes[10] = (palette_color_t*)((paletteSteps[4] << 10) | (paletteSteps[4] << 5) | paletteSteps[4]);
+		spriteColorTestPalettes[11] = (palette_color_t*)((paletteSteps[5] << 10) | (paletteSteps[5] << 5) | paletteSteps[5]);
+		spriteColorTestPalettes[12] = 0;
+		spriteColorTestPalettes[13] = 0;
+		spriteColorTestPalettes[14] = (palette_color_t*)((paletteSteps[6] << 10) | (paletteSteps[6] << 5) | paletteSteps[6]);
+		spriteColorTestPalettes[15] = (palette_color_t*)((paletteSteps[7] << 10) | (paletteSteps[7] << 5) | paletteSteps[7]);
+	}
+}
+
+void drawColorTest(void) {
+	if (cgb) {
+		set_bkg_palette(1, 6, bgColorTestPalettes);
+		set_sprite_palette(0, 4, spriteColorTestPalettes);
+
+		set_bkg_data(TESTBAR_OFFSET, testbar_color_TILE_COUNT, testbar_color_tiles);
+		set_bkg_based_tiles(1, 16, 12u, 1u, testbar_color_map, TESTBAR_OFFSET);
+
+		set_sprite_tile(0, TESTBAR_OFFSET);
+		set_sprite_tile(1, TESTBAR_OFFSET);
+		set_sprite_tile(2, TESTBAR_OFFSET);
+		set_sprite_tile(3, TESTBAR_OFFSET);
+		move_sprite(0, 14 * 8, 18 * 8);
+		move_sprite(1, 15 * 8, 18 * 8);
+		move_sprite(2, 16 * 8, 18 * 8);
+		move_sprite(3, 17 * 8, 18 * 8);
+
+		set_bkg_attribute_xy(1, 16, 6);
+		set_bkg_attribute_xy(2, 16, 6);
+		set_bkg_attribute_xy(3, 16, 5);
+		set_bkg_attribute_xy(4, 16, 5);
+		set_bkg_attribute_xy(5, 16, 4);
+		set_bkg_attribute_xy(6, 16, 4);
+		set_bkg_attribute_xy(7, 16, 3);
+		set_bkg_attribute_xy(8, 16, 3);
+		set_bkg_attribute_xy(9, 16, 2);
+		set_bkg_attribute_xy(10, 16, 2);
+		set_bkg_attribute_xy(11, 16, 1);
+		set_bkg_attribute_xy(12, 16, 1);
+		set_sprite_prop(0, 3);
+		set_sprite_prop(1, 2);
+		set_sprite_prop(2, 1);
+		set_sprite_prop(3, 0);
+	} else {
+		set_bkg_data(TESTBAR_OFFSET, testbar_bw_TILE_COUNT, testbar_bw_tiles);
+		set_bkg_based_tiles(1, 16, 16u, 1u, testbar_bw_map, TESTBAR_OFFSET);
+	}
+}
+
+
 void printAtWith(char str[], uint8_t x, uint8_t y, font_t font) {
-    font_set(font);
-    gotoxy(x, y);
-    printf(str);
+	font_set(font);
+	gotoxy(x, y);
+	printf(str);
 }
 
 void printCountAt(uint8_t x, uint8_t y, uint16_t count) {
-    if (count >= 10000) {
-        gotoxy(x, y);
-    } else if (count >= 1000) {
-        gotoxy(x + 1, y);
-    } else if (count >= 100) {
-        gotoxy(x + 2, y);
-    } else if (count >= 10) {
-        gotoxy(x + 3, y);
-    } else {
-        gotoxy(x + 4, y);
-    }
-    printf("%d", count);
+	if (count >= 10000) {
+		gotoxy(x, y);
+	} else if (count >= 1000) {
+		gotoxy(x + 1, y);
+	} else if (count >= 100) {
+		gotoxy(x + 2, y);
+	} else if (count >= 10) {
+		gotoxy(x + 3, y);
+	} else {
+		gotoxy(x + 4, y);
+	}
+	printf("%d", count);
 }
 
 font_t pressedFont(uint8_t key) {
-    if (KEY_PRESSED(key)) {
-        return minFontInvert;
-    } else {
-        return minFont;
-    }
+	if (KEY_PRESSED(key)) {
+		return minFontInvert;
+	} else {
+		return minFont;
+	}
 }
 
 void clearMessageArea(void) {
-    printAtWith("                  ", 1, 14, minFont);
-    printAtWith("                  ", 1, 15, minFont);
-    printAtWith("                  ", 1, 16, minFont);
+	printAtWith("                  ", 1, 13, minFont);
+	printAtWith("                  ", 1, 14, minFont);
+	printAtWith("                  ", 1, 15, minFont);
+}
+
+
+void printModel(void) {
+	if (_is_GBA) {
+		printAtWith("A", 18, 16, minFont);
+	} else if (cgb) {
+		printAtWith("C", 18, 16, minFont);
+	} else if (sgb) {
+		printAtWith("S", 18, 16, minFont);
+	} else if (_cpu == MGB_TYPE) {
+		printAtWith("M", 18, 16, minFont);
+	} else {
+		printAtWith("D", 18, 16, minFont);
+	}
 }
 
 void set_palette(palette_color_t* pal) {
-    if (cgb) set_bkg_palette(0, 1, pal);
-    if (sgb) sgb_transfer_pal(pal);
+	if (cgb) set_bkg_palette(0, 1, pal);
+	if (sgb) sgb_transfer_pal(pal);
 }
 
 void whiteScreen(void) {
-    font_set(ibmFont);
-    set_palette(paletteWhiteHC);
-    for (uint8_t i = 0; i < 18; i++) {
-        gotoxy(0, i);
-        printf("                    ");
-    }
+	font_set(ibmFont);
+	set_palette(paletteWhiteHC);
+	for (uint8_t i = 0; i < 18; i++) {
+		gotoxy(0, i);
+		printf("                    ");
+	}
 }
 
 
 // Sound
 void initSound(void) {
-    NR52_REG = 0x80; // Turn on sound hardware
-    NR11_REG = 0b10111111; // 2 bits for duty, 6 for length
-    NR21_REG = 0b10111111; // 2 bits for duty, 6 for length
-    NR50_REG = 0b01110111; // Channel Volume
-    NR51_REG = 0b00010010; // Mix in Channel 1 & 2
+	NR52_REG = 0x80; // Turn on sound hardware
+	NR11_REG = 0b10111111; // 2 bits for duty, 6 for length
+	NR21_REG = 0b10111111; // 2 bits for duty, 6 for length
+	NR50_REG = 0b01110111; // Channel Volume
+	NR51_REG = 0b00010010; // Mix in Channel 1 (left) & 2 (right)
 }
 
 void playTone(uint8_t scaleIndex) {
-    if (playChannel) { // Channel 1 (Low)
-        playChannel = 0;
-        lowIndex = scaleIndex;
-        lowTone = scaleLowG[lowIndex];
-        if (highIndex == 0 && lowIndex == 7) lowTone = scaleLowG[0]; // prevent the same pitch from being played together
-        
-        NR12_REG = 0b10001111; // 4 bits for initial vol, 1 for env direction, 3 for sweep count
-        NR13_REG = 0xFF & lowTone;
-        NR14_REG = 0b10000000 | ((lowTone >> 8) & 0b00000111);
-    } else { // Channel 2 (High)
-        playChannel = 1;
-        highIndex = scaleIndex;
-        highTone = scaleHighG[highIndex];
-        if (lowIndex == 7 && highIndex == 0) highTone = scaleHighG[7]; // prevent the same pitch from being played together
-        
-        NR22_REG = 0b10001111; // 4 bits for initial vol, 1 for env direction, 3 for sweep count
-        NR23_REG = 0xFF & highTone;
-        NR24_REG = 0b10000000 | ((highTone >> 8) & 0b00000111);
-    }
+	if (playChannel) { // Channel 1 (Low)
+		playChannel = 0;
+		lowIndex = scaleIndex;
+		lowTone = scaleLowG[lowIndex];
+		if (highIndex == 0 && lowIndex == 7) lowTone = scaleLowG[0]; // prevent the same pitch from being played together
+		
+		NR12_REG = 0b10001111; // 4 bits for initial vol, 1 for env direction, 3 for sweep count
+		NR13_REG = 0xFF & lowTone;
+		NR14_REG = 0b10000000 | ((lowTone >> 8) & 0b00000111);
+	} else { // Channel 2 (High)
+		playChannel = 1;
+		highIndex = scaleIndex;
+		highTone = scaleHighG[highIndex];
+		if (lowIndex == 7 && highIndex == 0) highTone = scaleHighG[7]; // prevent the same pitch from being played together
+		
+		NR22_REG = 0b10001111; // 4 bits for initial vol, 1 for env direction, 3 for sweep count
+		NR23_REG = 0xFF & highTone;
+		NR24_REG = 0b10000000 | ((highTone >> 8) & 0b00000111);
+	}
 }
 
 void maybeStopTone(uint8_t scaleIndex) {
-    if (lowIndex == scaleIndex) {
-        lowIndex = 255;
-        NR12_REG = 0b10000111; // 4 bits for initial vol, 1 for env direction, 3 for sweep count
-        NR14_REG = 0b01000000 | ((lowTone >> 8) & 0b00000111);
-    } else if (highIndex == scaleIndex) {
-        highIndex = 255;
-        NR22_REG = 0b10000111; // 4 bits for initial vol, 1 for env direction, 3 for sweep count
-        NR24_REG = 0b01000000 | ((highTone >> 8) & 0b00000111);
-    }
+	if (lowIndex == scaleIndex) {
+		lowIndex = 255;
+		NR12_REG = 0b10000111; // 4 bits for initial vol, 1 for env direction, 3 for sweep count
+		NR14_REG = 0b01000000 | ((lowTone >> 8) & 0b00000111);
+	} else if (highIndex == scaleIndex) {
+		highIndex = 255;
+		NR22_REG = 0b10000111; // 4 bits for initial vol, 1 for env direction, 3 for sweep count
+		NR24_REG = 0b01000000 | ((highTone >> 8) & 0b00000111);
+	}
 }
 
 void stopAllTones(void) {
-    for (uint8_t i = 0; i < 8; i++) maybeStopTone(i);
+	for (uint8_t i = 0; i < 8; i++) maybeStopTone(i);
 }
 
 
@@ -255,44 +355,44 @@ uint8_t volatile * const fives = (uint8_t *) 0x5555;
 uint8_t volatile * const two_a = (uint8_t *) 0x2AAA;
 
 void saveFlash(void) {
-    *fives = 0xAA;
-    *two_a = 0x55;
-    *fives = 0xA0;
-    *flashSaveByte = themeIndex & 0xF;
-    delay(100);
+	*fives = 0xAA;
+	*two_a = 0x55;
+	*fives = 0xA0;
+	*flashSaveByte = themeIndex & 0xF;
+	delay(100);
 }
 void saveFlashEnd(void) {}
 
 void wipeFlash(void) {
-    // wipe 0x7000 - 7FFF
-    usingFlashSave = 1;
-    *fives = 0xAA;
-    *two_a = 0x55;
-    *fives = 0x80;
-    *fives = 0xAA;
-    *two_a = 0x55;
-    *flashSectorAddr = 0x30;
-    delay(100);
+	// wipe 0x7000 - 7FFF
+	usingFlashSave = 1;
+	*fives = 0xAA;
+	*two_a = 0x55;
+	*fives = 0x80;
+	*fives = 0xAA;
+	*two_a = 0x55;
+	*flashSectorAddr = 0x30;
+	delay(100);
 }
 
 void saveSettings(void) {
-    *ramId = RAM_ID;
-    *ramTheme = themeIndex;
-    if (*ramId != RAM_ID && (usingFlashSave || themeIndex > 0)) {
-        saveFlashViaMem();
-    }
+	*ramId = RAM_ID;
+	*ramTheme = themeIndex;
+	if (*ramId != RAM_ID && (usingFlashSave || themeIndex > 0)) {
+		saveFlashViaMem();
+	}
 }
 
 void loadSettings(void) {
-    if (*flashSaveByte != 0xFF) {
-        themeIndex = *flashSaveByte & 0xF;
-        usingFlashSave = 1;
-    }
+	if (*flashSaveByte != 0xFF) {
+		themeIndex = *flashSaveByte & 0xF;
+		usingFlashSave = 1;
+	}
 
-    if (*ramId == RAM_ID) {
-        themeIndex = *ramTheme;
-        usingFlashSave = 0;
-    }
+	if (*ramId == RAM_ID) {
+		themeIndex = *ramTheme;
+		usingFlashSave = 0;
+	}
 }
 
 
@@ -303,151 +403,158 @@ uint8_t konamiKeyLast = 0;
 const uint8_t konamiSequence[] = {J_UP, J_UP, J_DOWN, J_DOWN, J_LEFT, J_RIGHT, J_LEFT, J_RIGHT, J_B, J_A};
 
 uint8_t konamiCodeEntered(void) {
-    if (!(cgb || sgb)) return 0;
+	if (!(cgb || sgb)) return 0;
 
-    if (NO_KEYS_PRESSED() || (konamiKeyLock && KEY_RELEASED(konamiKeyLast))) konamiKeyLock = 0;
-    if (konamiKeyLock) return 0;
+	if (NO_KEYS_PRESSED() || (konamiKeyLock && KEY_RELEASED(konamiKeyLast))) konamiKeyLock = 0;
+	if (konamiKeyLock) return 0;
 
-    if (KEY_PRESSED(konamiSequence[konamiStep])) {
-        konamiKeyLast = konamiSequence[konamiStep];
-        konamiKeyLock = 1;
-        konamiStep++;
-    } else if (keys > 0 && (konamiStep > 2 || !KEY_PRESSED(J_UP))) {
-        // reset sequence if wrong key is pressed
-        // EXCEPT if it's additional UP inputs at the beginning
-        konamiStep = 0;
-    }
+	if (KEY_PRESSED(konamiSequence[konamiStep])) {
+		konamiKeyLast = konamiSequence[konamiStep];
+		konamiKeyLock = 1;
+		konamiStep++;
+	} else if (keys > 0 && (konamiStep > 2 || !KEY_PRESSED(J_UP))) {
+		// reset sequence if wrong key is pressed
+		// EXCEPT if it's additional UP inputs at the beginning
+		konamiStep = 0;
+	}
 
-    if (konamiStep == 10) {
-        konamiStep = 0;
-        return 1;
-    }
+	if (konamiStep == 10) {
+		konamiStep = 0;
+		return 1;
+	}
 
-    return 0;
+	return 0;
 }
 
 
 // Main Loop
 void draw(void) {
-    if (inMenu) {
-        font_set(ibmFont);
-        gotoxy(1,1);
-        printf("Theme: %s", (char*)themeNames[themeIndex]);
+	if (inMenu) {
+		font_set(ibmFont);
+		gotoxy(1,1);
+		printf("Theme: %s", (char*)themeNames[themeIndex]);
 
-        if (usingFlashSave) {
-            printAtWith("USING FLASH CONFIG", 1, 14, minFontInvert);
-            printAtWith("HIT START TO CLEAR", 1, 15, minFont);
-            printAtWith("THEN RESET GAMEBOY", 1, 16, minFont);
-        } else {
-            printAtWith("NICE KONAMI CODE", 2, 14, minFontInvert);
-            printAtWith("SECRET MENU OPEN", 2, 15, minFontInvert);
-        }
-    } else {
-        printAtWith("Better Button Test", 1, 1, ibmFont);
+		if (usingFlashSave) {
+			printAtWith("USING FLASH CONFIG", 1, 13, minFontInvert);
+			printAtWith("HIT START TO CLEAR", 1, 14, minFont);
+			printAtWith("THEN RESET GAMEBOY", 1, 15, minFont);
+		} else {
+			printAtWith("NICE KONAMI CODE", 2, 13, minFontInvert);
+			printAtWith("SECRET MENU OPEN", 2, 14, minFontInvert);
+		}
+	} else {
+		printAtWith("Better Button Test", 1, 1, ibmFont);
 
-        if (!menuKeyLock) {
-            printAtWith("A", 1, 4, pressedFont(J_A));
-            if (aCount) printCountAt(14, 4, aCount);
-            printAtWith("B", 1, 5, pressedFont(J_B));
-            if (bCount) printCountAt(14, 5, bCount);
-            printAtWith("UP", 1, 6, pressedFont(J_UP));
-            if (upCount) printCountAt(14, 6, upCount);
-            printAtWith("DOWN", 1, 7, pressedFont(J_DOWN));
-            if (downCount) printCountAt(14, 7, downCount);
-            printAtWith("LEFT", 1, 8, pressedFont(J_LEFT));
-            if (leftCount) printCountAt(14, 8, leftCount);
-            printAtWith("RIGHT", 1, 9, pressedFont(J_RIGHT));
-            if (rightCount) printCountAt(14, 9, rightCount);
-            printAtWith("START", 1, 10, pressedFont(J_START));
-            if (startCount) printCountAt(14, 10, startCount);
-            printAtWith("SELECT", 1, 11, pressedFont(J_SELECT));
-            if (selectCount) printCountAt(14, 11, selectCount);
-        }
+		if (!menuKeyLock) {
+			printAtWith("A", 1, 4, pressedFont(J_A));
+			if (aCount) printCountAt(14, 4, aCount);
+			printAtWith("B", 1, 5, pressedFont(J_B));
+			if (bCount) printCountAt(14, 5, bCount);
+			printAtWith("UP", 1, 6, pressedFont(J_UP));
+			if (upCount) printCountAt(14, 6, upCount);
+			printAtWith("DOWN", 1, 7, pressedFont(J_DOWN));
+			if (downCount) printCountAt(14, 7, downCount);
+			printAtWith("LEFT", 1, 8, pressedFont(J_LEFT));
+			if (leftCount) printCountAt(14, 8, leftCount);
+			printAtWith("RIGHT", 1, 9, pressedFont(J_RIGHT));
+			if (rightCount) printCountAt(14, 9, rightCount);
+			printAtWith("START", 1, 10, pressedFont(J_START));
+			if (startCount) printCountAt(14, 10, startCount);
+			printAtWith("SELECT", 1, 11, pressedFont(J_SELECT));
+			if (selectCount) printCountAt(14, 11, selectCount);
+		}
 
-        if (dpadError) {
-            printAtWith("ILLEGAL DPAD INPUT", 1, 14, minFontInvert);
-            printAtWith("MORE THAN 2 DIRS\n  PRESSED AT ONCE", 2, 15, minFont);
-        } else if (totalCount > 255) {
-            printAtWith("YOU REALLY LOVE", 2, 14, minFontInvert);
-            printAtWith("TESTING BUTTONS", 3, 15, minFontInvert);
-        }
-    }
+		if (dpadError) {
+			printAtWith("ILLEGAL DPAD INPUT", 1, 13, minFontInvert);
+			printAtWith("MORE THAN 2 DIRS\n  PRESSED AT ONCE", 2, 14, minFont);
+		} else if (totalCount > 255) {
+			printAtWith("YOU REALLY LOVE", 2, 13, minFontInvert);
+			printAtWith("TESTING BUTTONS", 3, 14, minFontInvert);
+		}
+	}
 }
 
 void update(void) {
-    if (inMenu) {
-        if (!usingFlashSave) {
-            if (KEY_TICKED(J_RIGHT)) { 
-                themeIndex = (themeIndex + 1) % themeCount;
-            } else if (KEY_TICKED(J_LEFT)) {
-                themeIndex = themeIndex - 1;
-                if (themeIndex == 255) themeIndex = themeCount - 1;
-            }
+	if (inMenu) {
+		if (!usingFlashSave) {
+			if (KEY_TICKED(J_RIGHT)) { 
+				themeIndex = (themeIndex + 1) % themeCount;
+			} else if (KEY_TICKED(J_LEFT)) {
+				themeIndex = themeIndex - 1;
+				if (themeIndex == 255) themeIndex = themeCount - 1;
+			}
 
-            set_palette(palettes[themeIndex]);
-        }
+			set_palette(palettes[themeIndex]);
+		}
 
-        if ((!usingFlashSave && KEY_TICKED(J_START)) || KEY_RELEASED(J_START) || KEY_TICKED(J_SELECT) || KEY_TICKED(J_A) || KEY_TICKED(J_B)) {
-            inMenu = 0;
-            menuKeyLock = 1;
-            saveSettings();
-            clearMessageArea();
-        } else if (usingFlashSave && KEY_TICKED(J_START)) {
-            whiteScreen();
-            wipeFlash();
-        }
+		if ((!usingFlashSave && KEY_TICKED(J_START)) || KEY_RELEASED(J_START) || KEY_TICKED(J_SELECT) || KEY_TICKED(J_A) || KEY_TICKED(J_B)) {
+			inMenu = 0;
+			menuKeyLock = 1;
+			saveSettings();
+			clearMessageArea();
+		} else if (usingFlashSave && KEY_TICKED(J_START)) {
+			whiteScreen();
+			wipeFlash();
+		}
 
-    } else {
-        if (!menuKeyLock) {
-            if (KEY_TICKED(J_A)) { playTone(0); aCount++; totalCount++; } else if (KEY_RELEASED(J_A)) maybeStopTone(0);
-            if (KEY_TICKED(J_B)) { playTone(1); bCount++; totalCount++; } else if (KEY_RELEASED(J_B)) maybeStopTone(1);
-            if (KEY_TICKED(J_UP)) { playTone(2); upCount++; totalCount++; } else if (KEY_RELEASED(J_UP)) maybeStopTone(2);
-            if (KEY_TICKED(J_DOWN)) { playTone(3); downCount++; totalCount++; } else if (KEY_RELEASED(J_DOWN)) maybeStopTone(3);
-            if (KEY_TICKED(J_LEFT)) { playTone(4); leftCount++; totalCount++; } else if (KEY_RELEASED(J_LEFT)) maybeStopTone(4);
-            if (KEY_TICKED(J_RIGHT)) { playTone(5); rightCount++; totalCount++; } else if (KEY_RELEASED(J_RIGHT)) maybeStopTone(5);
-            if (KEY_TICKED(J_START)) { playTone(6); startCount++; totalCount++; } else if (KEY_RELEASED(J_START)) maybeStopTone(6);
-            if (KEY_TICKED(J_SELECT)) { playTone(7); selectCount++; totalCount++; } else if (KEY_RELEASED(J_SELECT)) maybeStopTone(7);
+	} else {
+		if (!menuKeyLock) {
+			if (KEY_TICKED(J_A)) { playTone(0); aCount++; totalCount++; } else if (KEY_RELEASED(J_A)) maybeStopTone(0);
+			if (KEY_TICKED(J_B)) { playTone(1); bCount++; totalCount++; } else if (KEY_RELEASED(J_B)) maybeStopTone(1);
+			if (KEY_TICKED(J_UP)) { playTone(2); upCount++; totalCount++; } else if (KEY_RELEASED(J_UP)) maybeStopTone(2);
+			if (KEY_TICKED(J_DOWN)) { playTone(3); downCount++; totalCount++; } else if (KEY_RELEASED(J_DOWN)) maybeStopTone(3);
+			if (KEY_TICKED(J_LEFT)) { playTone(4); leftCount++; totalCount++; } else if (KEY_RELEASED(J_LEFT)) maybeStopTone(4);
+			if (KEY_TICKED(J_RIGHT)) { playTone(5); rightCount++; totalCount++; } else if (KEY_RELEASED(J_RIGHT)) maybeStopTone(5);
+			if (KEY_TICKED(J_START)) { playTone(6); startCount++; totalCount++; } else if (KEY_RELEASED(J_START)) maybeStopTone(6);
+			if (KEY_TICKED(J_SELECT)) { playTone(7); selectCount++; totalCount++; } else if (KEY_RELEASED(J_SELECT)) maybeStopTone(7);
 
-            if (
-                (KEY_PRESSED(J_UP) && KEY_PRESSED(J_DOWN))
-                || (KEY_PRESSED(J_LEFT) && KEY_PRESSED(J_RIGHT))
-            ) dpadError = 1;
-        }
+			if (
+				(KEY_PRESSED(J_UP) && KEY_PRESSED(J_DOWN))
+				|| (KEY_PRESSED(J_LEFT) && KEY_PRESSED(J_RIGHT))
+			) dpadError = 1;
+		}
 
-        if (NO_KEYS_PRESSED()) menuKeyLock = 0;
+		if (NO_KEYS_PRESSED()) menuKeyLock = 0;
 
-        if (konamiCodeEntered()) {
-            stopAllTones();
-            loadSettings();
-            clearMessageArea();
-            inMenu = 1;
-        }
-    }
+		if (konamiCodeEntered()) {
+			stopAllTones();
+			loadSettings();
+			clearMessageArea();
+			inMenu = 1;
+		}
+	}
 }
 
 void main(void) {
-    ENABLE_RAM;
+	ENABLE_RAM;
+	SHOW_BKG;
+	SHOW_SPRITES;
+	SPRITES_8x8;
 
-    memcpy(&ramBuffer, (void *) &saveFlash, (uint16_t) objectDistance(saveFlash, saveFlashEnd));
+	memcpy(&ramBuffer, (void *) &saveFlash, (uint16_t) objectDistance(saveFlash, saveFlashEnd));
 
-    if (_cpu == CGB_TYPE) cgb = 1;
-    if (sgb_check()) {
-        sgb = 1;
-        sgb_pal_delay();
-    }
+	if (_cpu == CGB_TYPE) cgb = 1;
+	if (sgb_check()) {
+		sgb = 1;
+		sgb_pal_delay();
+	}
 
-    set_palette(palettes[themeIndex]);
+	set_palette(palettes[themeIndex]);
 
-    loadSettings();
-    initSound();
-    setupFonts();
-    drawBorder();
+	loadSettings();
+	initSound();
+	setupFonts();
+	drawBorder();
 
-    while(1) {
-        UPDATE_KEYS();
-        update();
-        draw();
+	buildColorTestPalettes();
+	drawColorTest();
+	printModel();
 
-        wait_vbl_done();
-    }
+	while(1) {
+		UPDATE_KEYS();
+		update();
+		draw();
+
+		wait_vbl_done();
+	}
 }
