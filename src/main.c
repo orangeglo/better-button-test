@@ -14,9 +14,11 @@
 #include "border.h"
 #include "testbar_color.h"
 #include "testbar_bw.h"
+#include "gt_invert.h"
 
 #define BORDER_OFFSET 0xB0
 #define TESTBAR_OFFSET 0xB9
+#define GT_INVERT_OFFSET 0xBD
 
 
 // RAM function stuff
@@ -145,6 +147,8 @@ void setupFonts(void) {
 		font_color(3, 0);
 	}
 	minFontInvert = font_load(font_min);
+
+	set_bkg_data(GT_INVERT_OFFSET, gt_invert_TILE_COUNT, gt_invert_tiles);
 }
 
 void drawBorder(void) {
@@ -259,7 +263,6 @@ font_t pressedFont(uint8_t key) {
 void clearMessageArea(void) {
 	printAtWith("                  ", 1, 13, minFont);
 	printAtWith("                  ", 1, 14, minFont);
-	printAtWith("                  ", 1, 15, minFont);
 }
 
 
@@ -433,8 +436,7 @@ void draw(void) {
 
 		if (usingFlashSave) {
 			printAtWith("USING FLASH CONFIG", 1, 13, minFontInvert);
-			printAtWith("HIT START TO CLEAR", 1, 14, minFont);
-			printAtWith("THEN RESET GAMEBOY", 1, 15, minFont);
+			printAtWith("HIT START TO RESET", 1, 14, minFontInvert);
 		} else {
 			printAtWith("NICE KONAMI CODE", 2, 13, minFontInvert);
 			printAtWith("SECRET MENU OPEN", 2, 14, minFontInvert);
@@ -463,10 +465,11 @@ void draw(void) {
 
 		if (dpadError) {
 			printAtWith("ILLEGAL DPAD INPUT", 1, 13, minFontInvert);
-			printAtWith("MORE THAN 2 DIRS\n  PRESSED AT ONCE", 2, 14, minFont);
+			printAtWith(" >2 DIRS PRESSED  ", 1, 14, minFontInvert);
+			set_bkg_based_tiles(2, 14, 1u, 1u, gt_invert_tiles, GT_INVERT_OFFSET);
 		} else if (totalCount > 255) {
-			printAtWith("YOU REALLY LOVE", 2, 13, minFontInvert);
-			printAtWith("TESTING BUTTONS", 3, 14, minFontInvert);
+			printAtWith("YOU REALLY LOVE ", 2, 13, minFontInvert);
+			printAtWith(" TESTING BUTTONS", 2, 14, minFontInvert);
 		}
 	}
 }
