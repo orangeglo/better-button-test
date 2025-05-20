@@ -11,8 +11,6 @@
 #include <gbdk/console.h>
 #include <gbdk/font.h>
 
-#include "super_gb.h"
-
 #include "border.h"
 #include "testbar_color.h"
 #include "testbar_bw.h"
@@ -281,7 +279,6 @@ void printModel(void) {
 
 void set_palette(palette_color_t* pal) {
 	if (cgb) set_bkg_palette(0, 1, pal);
-	if (sgb) sgb_transfer_pal(pal);
 }
 
 void whiteScreen(void) {
@@ -403,7 +400,7 @@ uint8_t konamiKeyLast = 0;
 const uint8_t konamiSequence[] = {J_UP, J_UP, J_DOWN, J_DOWN, J_LEFT, J_RIGHT, J_LEFT, J_RIGHT, J_B, J_A};
 
 uint8_t konamiCodeEntered(void) {
-	if (!(cgb || sgb)) return 0;
+	if (!cgb) return 0;
 
 	if (NO_KEYS_PRESSED() || (konamiKeyLock && KEY_RELEASED(konamiKeyLast))) konamiKeyLock = 0;
 	if (konamiKeyLock) return 0;
@@ -526,6 +523,8 @@ void update(void) {
 }
 
 void main(void) {
+	DISPLAY_OFF;
+
 	ENABLE_RAM;
 	SHOW_BKG;
 	SHOW_SPRITES;
@@ -534,10 +533,7 @@ void main(void) {
 	memcpy(&ramBuffer, (void *) &saveFlash, (uint16_t) objectDistance(saveFlash, saveFlashEnd));
 
 	if (_cpu == CGB_TYPE) cgb = 1;
-	if (sgb_check()) {
-		sgb = 1;
-		sgb_pal_delay();
-	}
+	if (sgb_check()) sgb = 1;
 
 	set_palette(palettes[themeIndex]);
 
@@ -549,6 +545,8 @@ void main(void) {
 	buildColorTestPalettes();
 	drawColorTest();
 	printModel();
+
+	DISPLAY_ON;
 
 	while(1) {
 		UPDATE_KEYS();
