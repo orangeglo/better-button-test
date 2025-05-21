@@ -20,6 +20,8 @@
 #define TESTBAR_OFFSET 0xB9
 #define GT_INVERT_OFFSET 0xBD
 
+#define SPEEDRUN_PRESSES 500
+
 
 // RAM function stuff
 #define objectDistance(a, b) ((void *)&(b) - (void *)&(a))
@@ -44,7 +46,10 @@ uint8_t cgb = 0;
 uint8_t inMenu = 0;
 uint8_t menuKeyLock = 0;
 uint8_t themeIndex = 0;
+uint8_t triggerMessageClear = 0;
 
+uint16_t speedrunStartTime = 0;
+uint16_t speedrunStopTime = 0;
 uint16_t totalCount = 0;
 uint16_t startCount = 0;
 uint16_t selectCount = 0;
@@ -55,6 +60,8 @@ uint16_t downCount = 0;
 uint16_t leftCount = 0;
 uint16_t rightCount = 0;
 uint8_t dpadError = 0;
+
+char textBuffer[20];
 
 uint8_t playChannel = 0;
 uint8_t lowIndex = 255;
@@ -427,6 +434,18 @@ uint8_t konamiCodeEntered(void) {
 }
 
 
+// Other
+void incTotalCount(void) {
+	if (totalCount == 0) speedrunStartTime = sys_time;
+	if (totalCount == SPEEDRUN_PRESSES) {
+		triggerMessageClear = 1;
+		speedrunStopTime = sys_time;
+		sprintf(textBuffer, "   %ds %dms   ", (speedrunStopTime - speedrunStartTime) / 60, ((speedrunStopTime - speedrunStartTime) % 60) * 100 / 60);
+	}
+	totalCount++;
+}
+
+
 // Main Loop
 void draw(void) {
 	if (inMenu) {
@@ -463,10 +482,18 @@ void draw(void) {
 			if (selectCount) printCountAt(14, 11, selectCount);
 		}
 
+		if (triggerMessageClear) {
+			clearMessageArea();
+			triggerMessageClear = 0;
+		}
+
 		if (dpadError) {
 			printAtWith("ILLEGAL DPAD INPUT", 1, 13, minFontInvert);
 			printAtWith(" >2 DIRS PRESSED  ", 1, 14, minFontInvert);
 			set_bkg_based_tiles(2, 14, 1u, 1u, gt_invert_tiles, GT_INVERT_OFFSET);
+		} else if (speedrunStopTime > 0) {
+			printAtWith("GREAT SPEEDRUN", 3, 13, minFontInvert);
+			printAtWith(textBuffer, 3, 14, minFontInvert);
 		} else if (totalCount > 255) {
 			printAtWith("YOU REALLY LOVE ", 2, 13, minFontInvert);
 			printAtWith(" TESTING BUTTONS", 2, 14, minFontInvert);
@@ -499,14 +526,14 @@ void update(void) {
 
 	} else {
 		if (!menuKeyLock) {
-			if (KEY_TICKED(J_A)) { playTone(0); aCount++; totalCount++; } else if (KEY_RELEASED(J_A)) maybeStopTone(0);
-			if (KEY_TICKED(J_B)) { playTone(1); bCount++; totalCount++; } else if (KEY_RELEASED(J_B)) maybeStopTone(1);
-			if (KEY_TICKED(J_UP)) { playTone(2); upCount++; totalCount++; } else if (KEY_RELEASED(J_UP)) maybeStopTone(2);
-			if (KEY_TICKED(J_DOWN)) { playTone(3); downCount++; totalCount++; } else if (KEY_RELEASED(J_DOWN)) maybeStopTone(3);
-			if (KEY_TICKED(J_LEFT)) { playTone(4); leftCount++; totalCount++; } else if (KEY_RELEASED(J_LEFT)) maybeStopTone(4);
-			if (KEY_TICKED(J_RIGHT)) { playTone(5); rightCount++; totalCount++; } else if (KEY_RELEASED(J_RIGHT)) maybeStopTone(5);
-			if (KEY_TICKED(J_START)) { playTone(6); startCount++; totalCount++; } else if (KEY_RELEASED(J_START)) maybeStopTone(6);
-			if (KEY_TICKED(J_SELECT)) { playTone(7); selectCount++; totalCount++; } else if (KEY_RELEASED(J_SELECT)) maybeStopTone(7);
+			if (KEY_TICKED(J_A)) { playTone(0); aCount++; incTotalCount(); } else if (KEY_RELEASED(J_A)) maybeStopTone(0);
+			if (KEY_TICKED(J_B)) { playTone(1); bCount++; incTotalCount(); } else if (KEY_RELEASED(J_B)) maybeStopTone(1);
+			if (KEY_TICKED(J_UP)) { playTone(2); upCount++; incTotalCount(); } else if (KEY_RELEASED(J_UP)) maybeStopTone(2);
+			if (KEY_TICKED(J_DOWN)) { playTone(3); downCount++; incTotalCount(); } else if (KEY_RELEASED(J_DOWN)) maybeStopTone(3);
+			if (KEY_TICKED(J_LEFT)) { playTone(4); leftCount++; incTotalCount(); } else if (KEY_RELEASED(J_LEFT)) maybeStopTone(4);
+			if (KEY_TICKED(J_RIGHT)) { playTone(5); rightCount++; incTotalCount(); } else if (KEY_RELEASED(J_RIGHT)) maybeStopTone(5);
+			if (KEY_TICKED(J_START)) { playTone(6); startCount++; incTotalCount(); } else if (KEY_RELEASED(J_START)) maybeStopTone(6);
+			if (KEY_TICKED(J_SELECT)) { playTone(7); selectCount++; incTotalCount(); } else if (KEY_RELEASED(J_SELECT)) maybeStopTone(7);
 
 			if (
 				(KEY_PRESSED(J_UP) && KEY_PRESSED(J_DOWN))
