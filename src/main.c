@@ -4,7 +4,6 @@
 
 	TODO:
 	  - link cable basic check
-	  - better speedrun text spacing
 */
 
 #include <stdint.h>
@@ -24,7 +23,7 @@
 #define TESTBAR_OFFSET 0xB9
 #define GT_INVERT_OFFSET 0xBD
 
-#define SPEEDRUN_PRESSES 1000
+#define SPEEDRUN_PRESSES 10
 
 
 // RAM function stuff
@@ -445,7 +444,17 @@ void incTotalCount(void) {
 	if (totalCount == SPEEDRUN_PRESSES) {
 		triggerMessageClear = 1;
 		speedrunStopTime = sys_time;
-		sprintf(textBuffer, "   %ds %dms   ", (speedrunStopTime - speedrunStartTime) / 60, ((speedrunStopTime - speedrunStartTime) % 60) * 100 / 60);
+
+		uint16_t seconds = (speedrunStopTime - speedrunStartTime) / 60;
+		uint16_t milliSeconds = ((speedrunStopTime - speedrunStartTime) % 60) * 100 / 60;
+
+		sprintf(textBuffer, "   "); // set up initial padding
+
+		uint8_t shiftRight = 3;
+		if (seconds >= 100 && milliSeconds >= 10) shiftRight = 2;
+		sprintf(textBuffer + shiftRight, "%ds %dms   ", seconds, milliSeconds);
+
+		sprintf(textBuffer + 11, "   "); // make sure that last tiles are filled
 	}
 	totalCount++;
 }
