@@ -23,7 +23,7 @@
 #define TESTBAR_OFFSET 0xB9
 #define GT_INVERT_OFFSET 0xBD
 
-#define SPEEDRUN_PRESSES 10
+#define SPEEDRUN_PRESSES 1000
 
 
 // RAM function stuff
