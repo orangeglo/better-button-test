@@ -1,6 +1,10 @@
 /*
 	Better Button Test v6
 	GBDK 2020 for Game Boy
+
+	TODO:
+	  - link cable basic check
+	  - better speedrun text spacing
 */
 
 #include <stdint.h>
@@ -20,7 +24,7 @@
 #define TESTBAR_OFFSET 0xB9
 #define GT_INVERT_OFFSET 0xBD
 
-#define SPEEDRUN_PRESSES 500
+#define SPEEDRUN_PRESSES 1000
 
 
 // RAM function stuff
@@ -372,7 +376,6 @@ void saveFlashEnd(void) {}
 
 void wipeFlash(void) {
 	// wipe 0x7000 - 7FFF
-	usingFlashSave = 1;
 	*fives = 0xAA;
 	*two_a = 0x55;
 	*fives = 0x80;
@@ -383,9 +386,11 @@ void wipeFlash(void) {
 }
 
 void saveSettings(void) {
+	if (usingFlashSave) return;
+
 	*ramId = RAM_ID;
 	*ramTheme = themeIndex;
-	if (*ramId != RAM_ID && (usingFlashSave || themeIndex > 0)) {
+	if ((*ramId != RAM_ID) && (themeIndex > 0)) {
 		saveFlashViaMem();
 	}
 }
@@ -460,6 +465,7 @@ void draw(void) {
 			printAtWith("NICE KONAMI CODE", 2, 13, minFontInvert);
 			printAtWith("SECRET MENU OPEN", 2, 14, minFontInvert);
 		}
+
 	} else {
 		printAtWith("Better Button Test", 1, 1, ibmFont);
 
@@ -489,7 +495,8 @@ void draw(void) {
 
 		if (dpadError) {
 			printAtWith("ILLEGAL DPAD INPUT", 1, 13, minFontInvert);
-			printAtWith(" >2 DIRS PRESSED  ", 1, 14, minFontInvert);
+			printAtWith(" ", 1, 14, minFontInvert);
+			printAtWith("2 DIRS PRESSED  ", 3, 14, minFontInvert);
 			set_bkg_based_tiles(2, 14, 1u, 1u, gt_invert_tiles, GT_INVERT_OFFSET);
 		} else if (speedrunStopTime > 0) {
 			printAtWith("GREAT SPEEDRUN", 3, 13, minFontInvert);
@@ -517,8 +524,15 @@ void update(void) {
 		if ((!usingFlashSave && KEY_TICKED(J_START)) || KEY_RELEASED(J_START) || KEY_TICKED(J_SELECT) || KEY_TICKED(J_A) || KEY_TICKED(J_B)) {
 			inMenu = 0;
 			menuKeyLock = 1;
+			triggerMessageClear = 1;
 			saveSettings();
-			clearMessageArea();
+			triggerMessageClear = 1; // This is only here so that flash saving doesn't freeze
+			/*
+				Clearly something is wrong with the flash saving process.
+				The second triggerMessageClear will essentially get skipped, but without it,
+				the program will freeze after saving. Changes to the saveFlash function,
+				for example removing the delay, can also cause freezes.
+			*/
 		} else if (usingFlashSave && KEY_TICKED(J_START)) {
 			whiteScreen();
 			wipeFlash();
@@ -565,9 +579,9 @@ void main(void) {
 	if (_cpu == CGB_TYPE) cgb = 1;
 	if (sgb_check()) sgb = 1;
 
-	set_palette(palettes[themeIndex]);
-
 	loadSettings();
+	set_palette(palettes[themeIndex]);
+	
 	initSound();
 	setupFonts();
 	drawBorder();
