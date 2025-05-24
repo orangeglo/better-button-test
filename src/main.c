@@ -1,9 +1,6 @@
 /*
 	Better Button Test v6
 	GBDK 2020 for Game Boy
-
-	TODO:
-	  - link cable basic check
 */
 
 #include <stdint.h>
@@ -278,15 +275,15 @@ void clearMessageArea(void) {
 
 void printModel(void) {
 	if (_is_GBA) {
-		printAtWith("A", 18, 16, minFont);
+		printAtWith(" A", 17, 16, minFont);
 	} else if (cgb) {
-		printAtWith("C", 18, 16, minFont);
+		printAtWith(" C", 17, 16, minFont);
 	} else if (sgb) {
-		printAtWith("S", 18, 16, minFont);
+		printAtWith(" S", 17, 16, minFont);
 	} else if (_cpu == MGB_TYPE) {
-		printAtWith("M", 18, 16, minFont);
+		printAtWith(" M", 17, 16, minFont);
 	} else {
-		printAtWith("D", 18, 16, minFont);
+		printAtWith(" D", 17, 16, minFont);
 	}
 }
 
@@ -460,6 +457,48 @@ void incTotalCount(void) {
 }
 
 
+
+uint8_t linkByte = 1;
+
+void testLinkMaster(void) {
+	SB_REG = linkByte;
+	SC_REG = 0x81; // transfer on, internal clock
+
+	while (SC_REG >> 7) {} // wait for transfer to be done
+
+	// if (SB_REG == linkByte) { // we're looping back
+
+	// } else if (SB_REG == (linkByte - 1)) { // we received the previous byte back from a connected gameboy
+
+	// }
+
+	if (SB_REG != 0xFF)  {
+		if (linkByte < 0xFE) {
+			linkByte++;
+		} else {
+			linkByte = 1;
+		}
+	} else {
+		linkByte = 1;
+	}
+}
+
+void testLinkSlave(void) {
+	if (SB_REG != 0xFF) { // we've received data, send it right back
+		SC_REG = 0x80; // transfer on, external clock
+	}
+}
+
+void drawLink(void) {
+	if (SB_REG != 0xFF)  {
+		sprintf(textBuffer, "%hx", (uint8_t)SB_REG);
+		printAtWith(textBuffer, 17, 16, minFontInvert);
+	} else {
+		printModel();
+	}
+}
+
+
 // Main Loop
 void draw(void) {
 	if (inMenu) {
@@ -515,6 +554,8 @@ void draw(void) {
 			printAtWith(" TESTING BUTTONS", 2, 14, minFontInvert);
 		}
 	}
+
+	drawLink();
 }
 
 void update(void) {
@@ -573,6 +614,12 @@ void update(void) {
 			inMenu = 1;
 		}
 	}
+
+	if (totalCount > 0) {
+		testLinkMaster();
+	} else {
+		testLinkSlave();
+	}
 }
 
 void main(void) {
@@ -597,12 +644,13 @@ void main(void) {
 
 	buildColorTestPalettes();
 	drawColorTest();
-	printModel();
+	SB_REG = 0xFF;
 
 	DISPLAY_ON;
 
 	while(1) {
 		UPDATE_KEYS();
+
 		update();
 		draw();
 
