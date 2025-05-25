@@ -456,21 +456,13 @@ void incTotalCount(void) {
 	totalCount++;
 }
 
-
-
 uint8_t linkByte = 1;
-
+uint8_t lockSlave = 0;
 void testLinkMaster(void) {
 	SB_REG = linkByte;
 	SC_REG = 0x81; // transfer on, internal clock
 
 	while (SC_REG >> 7) {} // wait for transfer to be done
-
-	// if (SB_REG == linkByte) { // we're looping back
-
-	// } else if (SB_REG == (linkByte - 1)) { // we received the previous byte back from a connected gameboy
-
-	// }
 
 	if (SB_REG != 0xFF)  {
 		if (linkByte < 0xFE) {
@@ -485,16 +477,24 @@ void testLinkMaster(void) {
 
 void testLinkSlave(void) {
 	if (SB_REG != 0xFF) { // we've received data, send it right back
-		SC_REG = 0x80; // transfer on, external clock
+		SC_REG = 0x80; // transfer on, internal clock
+		lockSlave = 1;
 	}
 }
 
 void drawLink(void) {
-	if (SB_REG != 0xFF)  {
-		sprintf(textBuffer, "%hx", (uint8_t)SB_REG);
-		printAtWith(textBuffer, 17, 16, minFontInvert);
-	} else {
+	// sprintf(textBuffer, "%hx", (uint8_t)SB_REG);
+	// printAtWith(textBuffer, 0, 0, minFontInvert);
+	// sprintf(textBuffer, "%hx", (uint8_t)SC_REG);
+	// printAtWith(textBuffer, 4, 0, minFontInvert);
+	// sprintf(textBuffer, "%hx", lockSlave);
+	// printAtWith(textBuffer, 8, 0, minFontInvert);
+
+	if (SB_REG == 0xFF || !SB_REG)  {
 		printModel();
+	} else {
+		sprintf(textBuffer, "%hx", (uint8_t)SB_REG);
+		printAtWith(textBuffer, 17, 16, minFontInvert);	
 	}
 }
 
@@ -615,7 +615,7 @@ void update(void) {
 		}
 	}
 
-	if (totalCount > 0) {
+	if (!lockSlave && totalCount > 0) {
 		testLinkMaster();
 	} else {
 		testLinkSlave();
@@ -645,6 +645,7 @@ void main(void) {
 	buildColorTestPalettes();
 	drawColorTest();
 	SB_REG = 0xFF;
+	SC_REG = 0x80;
 
 	DISPLAY_ON;
 
