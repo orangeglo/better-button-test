@@ -9,13 +9,23 @@
 
 - Counts number of button inputs per button
 - Warns if your d-pad produces invalid input (more than two directions pressed at once)
-  - If your d-pad presses more than two direction at once, glitches can occur in some games - notably Link's Awakening. 
 - Produces pleasant tones (in stereo with headphones)
 - Color gradient to help detect CPU transplant skill issues
-- Border to help align screens
+- Border to check screens alignment
+- Link port test
 - Detects CPU type (**D**MG, **M**GB, **S**GB, **C**GB, **A**GB)
 - 16 different color themes
 - Tastes and smells better than the competition
+
+## d-pad Test
+
+Along with testing the response of your buttons, the rom will warn you if your d-pad is able to press more than 2 directions at once. Pressing more than 2 directions together can cause glitches in some games, notably Link's Awakening.
+
+## Link Port Test
+
+The rom will send an incremental byte of data over the link cable port to do a basic test. You can test the link port on two systems by linking them together, and then pressing a button on one system to set it as the "master" system. Both programs will increment a number in the bottom right, indicating they are sending a byte back and forth.
+
+You can also test the link port of a single system by connecting the rx and tx connections on a link cable together, to make a "loopback" cable.
 
 ## Color Themes
 
