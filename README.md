@@ -1,11 +1,13 @@
 # Better Button Test
 **[DOWNLOAD LATEST ROM HERE](https://github.com/orangeglo/better-button-test/releases/latest)**
 
-<img width="250" alt="Better Button Test v5" src="https://github.com/orangeglo/better-button-test/assets/2780987/86d14f5f-8d38-422f-b695-2be29e841950">
-<img width="250" alt="Better Button Test v5" src="https://github.com/orangeglo/better-button-test/assets/2780987/fcc13bf2-f2a1-45b6-9aec-6d0282be1e51">
-<img width="250" alt="Better Button Test v5" src="https://github.com/orangeglo/better-button-test/assets/2780987/da4b6023-8ec4-40d6-a649-e414d8228d18">
+----
 
-## 
+<img width="250" alt="Better Button Test v5" src="https://github.com/user-attachments/assets/b575f158-c5df-430e-abb1-f4534b8a18f4">
+<img width="250" alt="Better Button Test v5" src="https://github.com/user-attachments/assets/1ea87cbe-704e-488b-9d0e-7f895ba0ab78">
+<img width="250" alt="Better Button Test v5" src="https://github.com/user-attachments/assets/8fe58052-b523-41d6-b63d-f7de04ccc03a">
+
+-----
 
 - Counts number of button inputs per button
 - Warns if your d-pad produces invalid input (more than two directions pressed at once)
@@ -17,7 +19,7 @@
 - 16 different color themes
 - Tastes and smells better than the competition
 
-## d-pad Test
+## D-Pad Test
 
 Along with testing the response of your buttons, the rom will warn you if your d-pad is able to press more than 2 directions at once. Pressing more than 2 directions together can cause glitches in some games, notably Link's Awakening.
 
