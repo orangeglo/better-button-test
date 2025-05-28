@@ -16,6 +16,7 @@
 - Border to check screens alignment
 - Link port test
 - Detects CPU type (**D**MG, **M**GB, **S**GB, **C**GB, **A**GB)
+- Speedrun Mode: Press 1000 buttons as fast as you can to get a time displayed
 - 16 different color themes
 - Tastes and smells better than the competition
 
