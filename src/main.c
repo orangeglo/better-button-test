@@ -287,13 +287,13 @@ void printModel(void) {
 	}
 }
 
-void set_palette(palette_color_t* pal) {
+void setPalette(palette_color_t* pal) {
 	if (cgb) set_bkg_palette(0, 1, pal);
 }
 
 void whiteScreen(void) {
 	font_set(ibmFont);
-	set_palette(paletteWhiteHC);
+	setPalette(paletteWhiteHC);
 	for (uint8_t i = 0; i < 18; i++) {
 		gotoxy(0, i);
 		printf("                    ");
@@ -483,13 +483,6 @@ void testLinkSlave(void) {
 }
 
 void drawLink(void) {
-	// sprintf(textBuffer, "%hx", (uint8_t)SB_REG);
-	// printAtWith(textBuffer, 0, 0, minFontInvert);
-	// sprintf(textBuffer, "%hx", (uint8_t)SC_REG);
-	// printAtWith(textBuffer, 4, 0, minFontInvert);
-	// sprintf(textBuffer, "%hx", lockSlave);
-	// printAtWith(textBuffer, 8, 0, minFontInvert);
-
 	if (SB_REG == 0xFF || !SB_REG)  {
 		printModel();
 	} else {
@@ -568,7 +561,7 @@ void update(void) {
 				if (themeIndex == 255) themeIndex = themeCount - 1;
 			}
 
-			set_palette(palettes[themeIndex]);
+			setPalette(palettes[themeIndex]);
 		}
 
 		if ((!usingFlashSave && KEY_TICKED(J_START)) || KEY_RELEASED(J_START) || KEY_TICKED(J_SELECT) || KEY_TICKED(J_A) || KEY_TICKED(J_B)) {
@@ -636,7 +629,7 @@ void main(void) {
 	if (sgb_check()) sgb = 1;
 
 	loadSettings();
-	set_palette(palettes[themeIndex]);
+	setPalette(palettes[themeIndex]);
 	
 	initSound();
 	setupFonts();
